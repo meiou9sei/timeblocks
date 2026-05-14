@@ -7,7 +7,6 @@ A day-planning app built around time blocking. Design your ideal day, track how 
 Two parallel tracks — **Ideal** and **Actual** — let you plan your day in advance and log what really happened. Blocks are color-coded, resizable, and editable. Data persists locally and optionally syncs across devices via Google sign-in.
 
 **Core features:**
-
 - Drag-and-drop or tap-to-place blocks onto a 24-hour grid
 - Ideal vs. Actual track comparison
 - Block library with custom names, colors, and durations
@@ -22,7 +21,6 @@ Two parallel tracks — **Ideal** and **Actual** — let you plan your day in ad
 - Google sign-in + email/password auth with Firestore sync
 
 **Mobile:**
-
 - Click-to-place mode on by default (tap a block, then tap a slot)
 - Bottom block bar with tap-to-pick and double-tap-to-edit
 - Move button on placed blocks

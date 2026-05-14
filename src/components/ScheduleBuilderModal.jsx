@@ -180,6 +180,26 @@ export default function ScheduleBuilderModal({ blocks: allBlocks, ideal, actual,
     dragOrderRef.current = null
   }
 
+  function moveBlockUp(id) {
+    setBlockOrder(prev => {
+      const arr = [...prev]
+      const idx = arr.indexOf(id)
+      if (idx <= 0) return prev
+      ;[arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]]
+      return arr
+    })
+  }
+
+  function moveBlockDown(id) {
+    setBlockOrder(prev => {
+      const arr = [...prev]
+      const idx = arr.indexOf(id)
+      if (idx === -1 || idx >= arr.length - 1) return prev
+      ;[arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]]
+      return arr
+    })
+  }
+
   function handleAddIntakeTask() {
     if (!intakeName.trim()) return
     setIntakeTasks(prev => [...prev, {
@@ -359,7 +379,23 @@ export default function ScheduleBuilderModal({ blocks: allBlocks, ideal, actual,
                 onDragEnd={mode === 'gravity' ? handleOrderDragEnd : undefined}
               >
                 {mode === 'gravity' && (
-                  <span className="sb-drag-handle">⠿</span>
+                  <>
+                    <span className="sb-drag-handle">⠿</span>
+                    <span className="sb-order-btns" onClick={e => e.stopPropagation()}>
+                      <button
+                        className="sb-order-btn"
+                        onClick={e => { e.preventDefault(); moveBlockUp(b.id) }}
+                        disabled={blockOrder.indexOf(b.id) === 0}
+                        title="Move up"
+                      >↑</button>
+                      <button
+                        className="sb-order-btn"
+                        onClick={e => { e.preventDefault(); moveBlockDown(b.id) }}
+                        disabled={blockOrder.indexOf(b.id) === blockOrder.length - 1}
+                        title="Move down"
+                      >↓</button>
+                    </span>
+                  </>
                 )}
                 <input
                   type="checkbox"

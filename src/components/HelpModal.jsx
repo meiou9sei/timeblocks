@@ -59,6 +59,21 @@ export default function HelpModal({ onClose }) {
             </ul>
           </section>
 
+          <section className="help-section">
+            <h3 className="help-section-title">Touch / Click-to-Place Mode</h3>
+            <p className="help-text">
+              On mobile, blocks are placed by tapping rather than dragging. This mode can also be enabled on desktop via Settings → Interaction.
+            </p>
+            <ul className="help-list">
+              <li>Tap a block in the bar at the bottom to select it — it will highlight.</li>
+              <li>Tap any slot on the grid to place it there.</li>
+              <li>Tap the same block again in the bar to deselect it, or tap <strong>✕ Cancel</strong> in the banner.</li>
+              <li>To move a placed block, tap it to reveal buttons, then tap the <strong>↕ move button</strong> and tap a new slot.</li>
+              <li>To edit a placed block, tap it to reveal buttons, then tap <strong>✎</strong>.</li>
+              <li>Double-tap a block in the bottom bar to edit its name, color, and duration.</li>
+            </ul>
+          </section>
+
           <div className="help-divider" />
 
           <section className="help-section">

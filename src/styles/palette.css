@@ -151,12 +151,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.55;
+  opacity: 0;
   flex-shrink: 0;
   padding: 0;
   line-height: 1;
   transition: opacity 0.12s, background 0.12s;
 }
+.palette-block:hover .palette-block-remove { opacity: 0.55; }
 .palette-block-remove:hover { opacity: 1; background: rgba(0,0,0,0.45); }
 
 /* ── Inline edit form ───────────────────────── */

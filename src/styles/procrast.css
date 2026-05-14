@@ -334,13 +334,15 @@
   background: none;
   border: none;
   color: var(--text-dim);
-  font-size: 1rem;
+  font-size: 0.75rem;
   cursor: pointer;
   padding: 0;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  align-self: center;
+  margin-top: -12px;
   transition: color 0.15s, transform 0.3s;
 }
 .procrast-refresh-btn:hover { color: var(--accent); transform: rotate(180deg); }

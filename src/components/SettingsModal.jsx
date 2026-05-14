@@ -29,6 +29,7 @@ const THEMES = [
   { id: 'phosphor', label: 'Phosphor', bg: '#000000', card: '#020602', accent: '#33ff33' },
   { id: 'apple',      label: 'Apple',     bg: '#000000', card: '#1c1c1e', accent: '#0a84ff' },
   { id: 'wikipedia',    label: 'Wikipedia',   bg: '#f8f9fa', card: '#ffffff', accent: '#3366cc' },
+  { id: 'drunk',        label: 'Drunk',       bg: '#1a0528', card: '#2d0a3e', accent: '#ff1a8c' },
 ]
 
 export default function SettingsModal({ settings, onChange, onClearDay, onExport, onImport, onReset, onClose }) {
@@ -57,7 +58,12 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
     <div className="modal-backdrop" onClick={onClose}>
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="settings-modal-header">
-          <span className="settings-modal-title">⚙ SETTINGS</span>
+          <span className="settings-modal-title">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.9em', height: '0.9em', verticalAlign: 'text-bottom', marginRight: '0.4em' }}>
+              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
+            </svg>
+            SETTINGS
+          </span>
           <button className="settings-modal-close" onClick={onClose}>✕</button>
         </div>
 
@@ -209,8 +215,18 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
         <div className="settings-row" style={{ gridColumn: '1 / -1' }}>
           <label className="settings-label">Backup & restore</label>
           <div className="toggle-group">
-            <button className="toggle-btn" onClick={onExport}>⬇ Export</button>
-            <button className="toggle-btn" onClick={() => importInputRef.current.click()}>⬆ Import</button>
+            <button className="toggle-btn" onClick={onExport}>
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.85em', height: '0.85em', verticalAlign: 'text-bottom', marginRight: '0.3em' }}>
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
+              Export
+            </button>
+            <button className="toggle-btn" onClick={() => importInputRef.current.click()}>
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.85em', height: '0.85em', verticalAlign: 'text-bottom', marginRight: '0.3em' }}>
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+              </svg>
+              Import
+            </button>
             <input
               ref={importInputRef}
               type="file"

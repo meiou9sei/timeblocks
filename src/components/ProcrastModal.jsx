@@ -182,8 +182,18 @@ export default function ProcrastModal({ tasks, onAdd, onToggle, onDelete, onClea
           <p className="procrast-subtitle">things you'll definitely get to… eventually</p>
         </div>
         <div className="procrast-header-actions">
-          <button className="procrast-io-btn" onClick={handleExport} title="Export list as JSON"><span className="arrow">⬇</span> Export</button>
-          <button className="procrast-io-btn" onClick={() => importInputRef.current.click()} title="Import list from JSON"><span className="arrow">⬆</span> Import</button>
+          <button className="procrast-io-btn" onClick={handleExport} title="Export list as JSON">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.85em', height: '0.85em', verticalAlign: 'text-bottom', marginRight: '0.3em' }}>
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+            </svg>
+            Export
+          </button>
+          <button className="procrast-io-btn" onClick={() => importInputRef.current.click()} title="Import list from JSON">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.85em', height: '0.85em', verticalAlign: 'text-bottom', marginRight: '0.3em' }}>
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+            </svg>
+            Import
+          </button>
           <input ref={importInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportFile} />
           <button className="procrast-close" onClick={onClose} title="Close">✕</button>
         </div>
@@ -233,7 +243,7 @@ export default function ProcrastModal({ tasks, onAdd, onToggle, onDelete, onClea
           value={input}
           onChange={e => setInput(e.target.value)}
           maxLength={100}
-          autoFocus
+          autoFocus={!window.matchMedia('(max-width: 640px)').matches}
         />
         <button type="submit" className="procrast-add-btn">+ ADD</button>
       </form>

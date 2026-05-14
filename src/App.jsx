@@ -82,6 +82,19 @@ export default function App() {
   const [showMobileHint, setShowMobileHint] = useState(
     () => window.matchMedia('(max-width: 640px)').matches && !load('tb-mobile-hint-dismissed', false)
   )
+  const [showHelpHint, setShowHelpHint] = useState(() => !load('tb-help-hint-dismissed', false))
+  const [showPickingTip, setShowPickingTip] = useState(() => !load('tb-picking-tip-dismissed', false))
+
+  function dismissHelpHint() {
+    localStorage.setItem('tb-help-hint-dismissed', 'true')
+    setShowHelpHint(false)
+  }
+
+  function dismissPickingTip() {
+    localStorage.setItem('tb-picking-tip-dismissed', 'true')
+    setShowPickingTip(false)
+  }
+
   const gridScrollRef = useRef(null)
   const saveTimerRef = useRef(null)
   const initialSnapshotRef = useRef(false)
@@ -250,8 +263,17 @@ export default function App() {
 
   const handleClickSlot = useCallback((slot, track) => {
     if (!picking) return
-    const { blockId, duration, movingPlacedId, movingTrack } = picking
+    const { blockId, duration, movingPlacedId, movingTrack, procrastTaskId, taskText } = picking
     const startSlot = Math.min(Math.max(0, slot), 48 - duration)
+    if (procrastTaskId) {
+      if (isOccupied(startSlot, duration, track, null)) return
+      const newBlockId = uid()
+      setBlocks(prev => [...prev, { id: newBlockId, name: taskText, color: '#c87d2f', duration, procrast: true }])
+      const setTarget = track === 'ideal' ? setIdeal : setActual
+      setTarget(prev => [...prev, { id: uid(), blockId: newBlockId, startSlot, duration }])
+      setPicking(null)
+      return
+    }
     if (isOccupied(startSlot, duration, track, movingPlacedId)) return
     if (movingPlacedId) {
       const setter = movingTrack === 'ideal' ? setIdeal : setActual
@@ -517,6 +539,12 @@ export default function App() {
     setSettings(DEFAULT_SETTINGS)
     setTemplates([])
     setProcrastTasks([])
+    localStorage.removeItem('tb-help-hint-dismissed')
+    localStorage.removeItem('tb-mobile-hint-dismissed')
+    localStorage.removeItem('tb-picking-tip-dismissed')
+    setShowHelpHint(true)
+    setShowMobileHint(window.matchMedia('(max-width: 640px)').matches)
+    setShowPickingTip(true)
   }, [])
 
   const handleExportData = useCallback(() => {
@@ -565,9 +593,20 @@ export default function App() {
           <p className="app-subtitle">drag · drop · build your day</p>
         </div>
         <div className="app-header-actions">
-          <button className="tmpl-btn help-btn" onClick={() => setShowHelp(true)} title="Help / Keyboard Shortcuts">
-            ?
-          </button>
+          <div className="help-hint-wrap">
+            <button
+              className={`tmpl-btn help-btn${showHelpHint ? ' help-btn--glow' : ''}`}
+              onClick={() => { setShowHelp(true); dismissHelpHint() }}
+              title="Help / Keyboard Shortcuts"
+            >
+              ?
+            </button>
+            {showHelpHint && (
+              <div className="help-hint-bubble">
+                New here? Start with the guide
+              </div>
+            )}
+          </div>
           <button className="tmpl-btn" onClick={() => setShowTemplates(true)} title="Templates">            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
               <rect x="3" y="2.5" width="14" height="15" rx="1.5" />
               <line x1="6.5" y1="7"  x2="13.5" y2="7"  />
@@ -625,14 +664,23 @@ export default function App() {
             </div>
           )}
         </div>
-        <button className="hamburger-btn" onClick={() => setShowMobileMenu(m => !m)} aria-label="Menu">
-          {showMobileMenu ? '✕' : '☰'}
-        </button>
+        <div className="hamburger-hint-wrap">
+          <button className={`hamburger-btn${showHelpHint && !showMobileMenu ? ' help-btn--glow' : ''}`} onClick={() => setShowMobileMenu(m => !m)} aria-label="Menu">
+            {showMobileMenu ? '✕' : '☰'}
+          </button>
+          {showHelpHint && !showMobileMenu && (
+            <div className="help-hint-bubble help-hint-bubble--left">
+              New here? Tap for a guide
+            </div>
+          )}
+        </div>
       </header>
 
       {showMobileMenu && (
-        <div className="mobile-menu">
-          <button className="mobile-menu-item" onClick={() => { setShowHelp(true); setShowMobileMenu(false) }}>
+        <>
+          <div className="mobile-menu-backdrop" onClick={() => setShowMobileMenu(false)} />
+          <div className="mobile-menu">
+          <button className={`mobile-menu-item${showHelpHint ? ' mobile-menu-item--glow' : ''}`} onClick={() => { setShowHelp(true); setShowMobileMenu(false); dismissHelpHint() }}>
             <span className="mobile-menu-icon">?</span> Help
           </button>
           <button className="mobile-menu-item" onClick={() => { setShowTemplates(true); setShowMobileMenu(false) }}>
@@ -658,7 +706,10 @@ export default function App() {
             Happy Hour
           </button>
           <button className="mobile-menu-item" onClick={() => { setShowSettings(true); setShowMobileMenu(false) }}>
-            <span className="mobile-menu-icon">⚙</span> Settings
+            <svg className="mobile-menu-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
+            </svg>
+            Settings
           </button>
           <button className="mobile-menu-item" onClick={() => { setShowAuthModal(true); setShowMobileMenu(false) }}>
             <span className="mobile-menu-icon">
@@ -672,8 +723,9 @@ export default function App() {
             {user ? (user.displayName?.split(' ')[0] || user.email) : 'Sign in'}
           </button>
         </div>
+        </>
       )}
-      </div>
+      </div>{/* end app-header-wrap */}
 
       {showMobileHint && settings.noDragMode && (
         <div className="mobile-hint-banner">
@@ -683,10 +735,10 @@ export default function App() {
         </div>
       )}
 
-      {picking && (
+      {picking && showPickingTip && (
         <div className="picking-banner">
-          <span>Tap a slot to place <strong>{getBlock(picking.blockId)?.name}</strong> · Tap it again to edit</span>
-          <button className="picking-cancel" onClick={() => setPicking(null)}>✕ Cancel</button>
+          <span>Tap a slot to place <strong>{picking.procrastTaskId ? picking.taskText : getBlock(picking.blockId)?.name}</strong> · {picking.procrastTaskId ? 'Tap ✕ to cancel' : 'Tap it again to edit'} · tap anywhere else to cancel</span>
+          <button className="picking-cancel" onClick={dismissPickingTip}>Got it</button>
         </div>
       )}
 
@@ -748,6 +800,7 @@ export default function App() {
 
       <MobileBlockBar
         blocks={blocks}
+        procrastTasks={procrastTasks}
         onAddBlock={handleAddBlock}
         noDragMode={settings.noDragMode}
         picking={picking}

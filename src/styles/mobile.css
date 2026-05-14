@@ -132,6 +132,24 @@
   }
 }
 
+.mobile-menu-item--glow {
+  color: var(--accent);
+  border-color: var(--accent);
+  animation: help-glow-pulse 1.6s ease-in-out infinite;
+}
+
+.hamburger-hint-wrap {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .hamburger-hint-wrap {
+    display: block;
+    position: relative;
+    flex-shrink: 0;
+  }
+}
+
 /* ── Hamburger button (hidden on desktop) ─────── */
 
 .hamburger-btn {
@@ -150,6 +168,12 @@
   transition: color 0.15s, border-color 0.15s;
 }
 .hamburger-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+}
 
 /* ── Mobile menu panel ───────────────────────── */
 
@@ -241,6 +265,19 @@
 .picking-banner strong {
   color: var(--accent);
 }
+
+@media (max-width: 640px) {
+  .picking-banner {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    border-radius: 0;
+    margin-bottom: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
 
 .picking-cancel {
   background: none;
@@ -404,6 +441,53 @@
   white-space: nowrap;
 }
 
+.mobile-bar-divider {
+  flex-shrink: 0;
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  margin: 0.5rem 0.1rem;
+}
+
+.mobile-block-tile-procrast-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.mobile-procrast-overflow {
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  padding: 4px;
+  background: none;
+  border: 1px solid #c87d2f;
+  border-radius: var(--radius);
+  color: #c87d2f;
+  cursor: pointer;
+  opacity: 0.7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: opacity 0.12s;
+}
+.mobile-procrast-overflow:active { opacity: 1; }
+
+.mobile-procrast-overflow-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.mobile-procrast-overflow-label {
+  font-size: 0.46rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  text-align: center;
+}
+
 /* Center the block edit modal on mobile (override bottom-sheet default) */
 @media (max-width: 640px) {
   .modal-backdrop:has(.pbe-modal) {
@@ -511,5 +595,78 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+}
+
+/* ── Templates save row on mobile ─────────────── */
+
+@media (max-width: 640px) {
+  .tmpl-save-row {
+    flex-wrap: wrap;
+  }
+  .tmpl-save-row .toggle-group {
+    order: -1;
+    width: 100%;
+  }
+  /* Equal-width IDEAL / ACTUAL buttons */
+  .tmpl-save-row .toggle-group .toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* ── Builder: hide drag handle, show up/down btns ─ */
+
+.sb-order-btns { display: none; }
+
+@media (max-width: 640px) {
+  .sb-drag-handle { display: none !important; }
+  .sb-order-btns {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+  .sb-order-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: var(--radius);
+    font-family: var(--font);
+    font-size: 0.75rem;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.1s, border-color 0.1s;
+    flex-shrink: 0;
+  }
+  .sb-order-btn:disabled { opacity: 0.22; cursor: not-allowed; }
+  .sb-order-btn:not(:disabled):hover { color: var(--accent); border-color: var(--accent); }
+}
+
+/* ── Readable text in modals on mobile ────────── */
+
+@media (max-width: 640px) {
+  .settings-hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .help-section-title {
+    font-size: 0.72rem;
+  }
+
+  .help-text,
+  .help-list li {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+
+  .help-keys td {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
 }
 
