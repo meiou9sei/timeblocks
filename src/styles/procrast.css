@@ -1,0 +1,377 @@
+/* ── Procrastination Happy Hour page ─────────── */
+
+.procrast-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font);
+}
+
+.procrast-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.5rem 2rem 1rem;
+  border-bottom: 1px solid var(--grid-hour);
+  flex-shrink: 0;
+}
+
+.procrast-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.procrast-beer-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  flex-shrink: 0;
+}
+
+.procrast-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.35em;
+  color: var(--accent);
+  text-shadow: 0 0 28px var(--accent-glow), 0 0 8px var(--accent-glow);
+  line-height: 1;
+}
+
+.procrast-subtitle {
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  margin-top: 0.45rem;
+  padding-left: 2.45rem;
+}
+
+.procrast-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
+  border-radius: var(--radius);
+  transition: color 0.15s;
+}
+.procrast-close:hover { color: var(--accent); }
+
+.procrast-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.procrast-io-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.procrast-io-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.procrast-io-btn .arrow { position: relative; top: 2px; line-height: 1; }
+
+/* ── Task list ───────────────────────────────── */
+
+.procrast-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.procrast-empty-msg {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.procrast-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.procrast-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+.procrast-item:hover { border-color: var(--text-dim); }
+.procrast-item--done { opacity: 0.4; }
+.procrast-item--drag-over { border-color: var(--accent); background: var(--bg-card); }
+.procrast-item--dragging { opacity: 0.4; }
+
+.procrast-drag-handle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s;
+  line-height: 1;
+  user-select: none;
+}
+.procrast-item:hover .procrast-drag-handle { opacity: 0.5; }
+.procrast-item--dragging .procrast-drag-handle { opacity: 0.5; cursor: grabbing; }
+
+.procrast-check {
+  background: none;
+  border: 1px solid var(--text-dim);
+  color: var(--text-dim);
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.procrast-check:hover { border-color: var(--accent); color: var(--accent); }
+.procrast-check--done { background: var(--text-dim); color: var(--bg); border-color: var(--text-dim); }
+.procrast-check--done:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+.procrast-item-text {
+  flex: 1;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.procrast-item--done .procrast-item-text {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+.procrast-delete {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 0.15rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s;
+}
+.procrast-item:hover .procrast-delete { opacity: 0.7; }
+.procrast-delete:hover { color: var(--danger) !important; opacity: 1 !important; }
+
+.procrast-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 0.15rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s;
+}
+.procrast-item:hover .procrast-edit-btn { opacity: 0.6; }
+.procrast-edit-btn:hover { color: var(--accent) !important; opacity: 1 !important; }
+
+.procrast-edit-input {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.45rem;
+  outline: none;
+}
+
+.procrast-item--editing { border-color: var(--accent); }
+
+.procrast-done-divider {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin: 1rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.procrast-clear-confirm {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.procrast-clear-btn {
+  background: none;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.procrast-clear-btn:hover { border-color: var(--text-dim); color: var(--text); }
+.procrast-clear-btn--danger { border-color: var(--danger); color: var(--danger); }
+.procrast-clear-btn--danger:hover { background: var(--danger); color: var(--bg); }
+.procrast-clear-btn--cancel:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* ── Add form ────────────────────────────────── */
+
+.procrast-add-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 2rem 1.5rem;
+  border-top: 1px solid var(--grid-hour);
+  flex-shrink: 0;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.procrast-input {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.procrast-input:focus { border-color: var(--accent); }
+.procrast-input::placeholder { color: var(--text-muted); }
+
+.procrast-add-btn {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.procrast-add-btn:hover { background: var(--accent); color: var(--bg); }
+
+/* ── Header button ───────────────────────────── */
+
+.procrast-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.procrast-btn:hover { color: var(--accent); }
+.procrast-btn svg { width: 18px; height: 18px; }
+
+/* ── Palette suggestion widget ───────────────── */
+
+.palette-procrast {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.palette-procrast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.procrast-refresh-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, transform 0.3s;
+}
+.procrast-refresh-btn:hover { color: var(--accent); transform: rotate(180deg); }
+
+.procrast-suggestion {
+  display: flex;
+  align-items: center;
+  padding: 0.38rem 0.6rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-left: 3px solid #c87d2f;
+  border-radius: var(--radius);
+  cursor: grab;
+  margin-bottom: 0.28rem;
+  user-select: none;
+  transition: background 0.12s, border-color 0.12s;
+}
+.procrast-suggestion:hover { background: var(--bg-card); border-color: var(--text-dim); border-left-color: #e8962e; }
+.procrast-suggestion:active { cursor: grabbing; }
+
+.procrast-suggestion-text {
+  font-size: 0.66rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-procrast-none {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0 0.4rem;
+}

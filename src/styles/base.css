@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* ── Reset ──────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+/* ── Fixed variables (theme-independent) ────── */
+
+:root {
+  --danger:     #ef4444;
+  --row-h:      36px;
+  --label-w:    64px;
+  --palette-w:  230px;
+  --radius:     3px;
+  --font:       'Courier New', Courier, monospace;
+}
+
+[data-density="compact"] { --row-h: 20px; }
+
+/* ── Theme: Dark (default) ──────────────────── */
+
+:root, [data-theme="dark"] {
+  --bg:          #0c0c14;
+  --bg-card:     #12121e;
+  --bg-deep:     #090910;
+  --grid-half:   #1a1a2c;
+  --grid-hour:   #252540;
+  --text:        #e2e2f0;
+  --text-muted:  #7878a0;
+  --text-dim:    #a0a0bc;
+  --accent:      #00e5ff;
+  --accent-glow: rgba(0, 229, 255, 0.25);
+  --accent-alt:  #a78bfa;
+  --border:      #2a2a40;
+}
+
+/* ── Theme: Midnight ────────────────────────── */
+
+[data-theme="midnight"] {
+  --bg:          #000005;
+  --bg-card:     #0a0a12;
+  --bg-deep:     #000000;
+  --grid-half:   #111120;
+  --grid-hour:   #1a1a30;
+  --text:        #ffffff;
+  --text-muted:  #7070b8;
+  --text-dim:    #9898cc;
+  --accent:      #7c3aed;
+  --accent-glow: rgba(124, 58, 237, 0.35);
+  --accent-alt:  #f472b6;
+  --border:      #1a1a30;
+}
+
+/* ── Theme: Wikipedia ───────────────────────── */
+
+[data-theme="wikipedia"] {
+  --bg:          #f8f9fa;
+  --bg-card:     #ffffff;
+  --bg-deep:     #eaecf0;
+  --grid-half:   #c8ccd1;
+  --grid-hour:   #a2a9b1;
+  --text:        #202122;
+  --text-muted:  #72777d;
+  --text-dim:    #54595d;
+  --accent:      #3366cc;
+  --accent-glow: rgba(51, 102, 204, 0.15);
+  --accent-alt:  #0645ad;
+  --border:      #a2a9b1;
+  --font:        'Linux Libertine', 'Georgia', 'Times', serif;
+}
+
+/* ── Theme: Apple ───────────────────────────── */
+
+[data-theme="apple"] {
+  --bg:          #000000;
+  --bg-card:     #1c1c1e;
+  --bg-deep:     #000000;
+  --grid-half:   #2c2c2e;
+  --grid-hour:   #3a3a3c;
+  --text:        #ffffff;
+  --text-muted:  #8e8e93;
+  --text-dim:    #aeaeb2;
+  --accent:      #0a84ff;
+  --accent-glow: rgba(10, 132, 255, 0.25);
+  --accent-alt:  #30d158;
+  --border:      #38383a;
+  --font:        -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+/* ── Theme: Phosphor ────────────────────────── */
+
+[data-theme="phosphor"] {
+  --bg:          #000000;
+  --bg-card:     #020602;
+  --bg-deep:     #000000;
+  --grid-half:   #071007;
+  --grid-hour:   #0d1a0d;
+  --text:        #33ff33;
+  --text-muted:  #1a7a1a;
+  --text-dim:    #22bb22;
+  --accent:      #33ff33;
+  --accent-glow: rgba(51, 255, 51, 0.15);
+  --accent-alt:  #22bb22;
+  --border:      #0d1a0d;
+  --font:        'VT323', monospace;
+}
+
+[data-theme="phosphor"] { font-size: 20px; }
+
+
+
+[data-theme="gameboy"] {
+  --bg:          #0f1a0f;
+  --bg-card:     #162616;
+  --bg-deep:     #0a120a;
+  --grid-half:   #1a2e1a;
+  --grid-hour:   #1e3a1e;
+  --text:        #9bbc0f;
+  --text-muted:  #306230;
+  --text-dim:    #5a8a2a;
+  --accent:      #9bbc0f;
+  --accent-glow: rgba(155, 188, 15, 0.3);
+  --accent-alt:  #0f380f;
+  --border:      #1e3a1e;
+  --font:        'Press Start 2P', monospace;
+}
+
+
+[data-theme="abyss"] {
+  --bg:          #000000;
+  --bg-card:     #080808;
+  --bg-deep:     #000000;
+  --grid-half:   #0f0f0f;
+  --grid-hour:   #1a1a1a;
+  --text:        #ffffff;
+  --text-muted:  #555555;
+  --text-dim:    #888888;
+  --accent:      #ffffff;
+  --accent-glow: rgba(255, 255, 255, 0.15);
+  --accent-alt:  #aaaaaa;
+  --border:      #1a1a1a;
+}
+
+/* ── Theme: Light ───────────────────────────── */
+
+[data-theme="light"] {
+  --bg:          #f0f0f5;
+  --bg-card:     #ffffff;
+  --bg-deep:     #e4e4ee;
+  --grid-half:   #d4d4e4;
+  --grid-hour:   #b8b8d0;
+  --text:        #1a1a2e;
+  --text-muted:  #9090aa;
+  --text-dim:    #505070;
+  --accent:      #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.2);
+  --accent-alt:  #7c3aed;
+  --border:      #c8c8dc;
+}
+
+/* ── Theme: Forest ──────────────────────────── */
+
+[data-theme="forest"] {
+  --bg:          #0a130a;
+  --bg-card:     #111a11;
+  --bg-deep:     #060d06;
+  --grid-half:   #162016;
+  --grid-hour:   #1e2e1e;
+  --text:        #d4e8d4;
+  --text-muted:  #6a9a6a;
+  --text-dim:    #90b890;
+  --accent:      #4ade80;
+  --accent-glow: rgba(74, 222, 128, 0.25);
+  --accent-alt:  #60a5fa;
+  --border:      #1e2e1e;
+}
+
+/* ── Theme: Sakura ──────────────────────────── */
+
+[data-theme="sakura"] {
+  --bg:          #12080e;
+  --bg-card:     #1e0e18;
+  --bg-deep:     #0d0508;
+  --grid-half:   #261220;
+  --grid-hour:   #331830;
+  --text:        #f0d8e8;
+  --text-muted:  #8a5878;
+  --text-dim:    #b87898;
+  --accent:      #f472b6;
+  --accent-glow: rgba(244, 114, 182, 0.25);
+  --accent-alt:  #60a5fa;
+  --border:      #331830;
+}
+
+/* ── Theme: Crimson ─────────────────────────── */
+
+[data-theme="crimson"] {
+  --bg:          #0f0507;
+  --bg-card:     #1a0a0d;
+  --bg-deep:     #080305;
+  --grid-half:   #220d10;
+  --grid-hour:   #2e1215;
+  --text:        #f0d0d5;
+  --text-muted:  #8a4a52;
+  --text-dim:    #b87080;
+  --accent:      #e02040;
+  --accent-glow: rgba(224, 32, 64, 0.3);
+  --accent-alt:  #ff8c42;
+  --border:      #2e1215;
+}
+
+/* ── Theme: Ember ───────────────────────────── */
+
+[data-theme="ember"] {
+  --bg:          #0f0800;
+  --bg-card:     #1a1000;
+  --bg-deep:     #080500;
+  --grid-half:   #221500;
+  --grid-hour:   #2e1e00;
+  --text:        #f5e6c8;
+  --text-muted:  #8a6a30;
+  --text-dim:    #b89050;
+  --accent:      #ff6b1a;
+  --accent-glow: rgba(255, 107, 26, 0.3);
+  --accent-alt:  #ffd700;
+  --border:      #2e1e00;
+}
+
+/* ── Theme: Ocean ───────────────────────────── */
+
+[data-theme="ocean"] {
+  --bg:          #020d18;
+  --bg-card:     #061525;
+  --bg-deep:     #010810;
+  --grid-half:   #0a1e30;
+  --grid-hour:   #0e2840;
+  --text:        #c8e8f5;
+  --text-muted:  #3a7090;
+  --text-dim:    #5a90b0;
+  --accent:      #00b4d8;
+  --accent-glow: rgba(0, 180, 216, 0.3);
+  --accent-alt:  #7dd3fc;
+  --border:      #0e2840;
+}
+
+/* ── Theme: Dusk ────────────────────────────── */
+
+[data-theme="dusk"] {
+  --bg:          #0d0a1a;
+  --bg-card:     #161028;
+  --bg-deep:     #080612;
+  --grid-half:   #1e1535;
+  --grid-hour:   #281e45;
+  --text:        #ede0ff;
+  --text-muted:  #6a5a90;
+  --text-dim:    #9a80c0;
+  --accent:      #f0a030;
+  --accent-glow: rgba(240, 160, 48, 0.3);
+  --accent-alt:  #c084fc;
+  --border:      #281e45;
+}
+
+/* ── Theme: Slate ───────────────────────────── */
+
+[data-theme="slate"] {
+  --bg:          #0a0d12;
+  --bg-card:     #10151e;
+  --bg-deep:     #060810;
+  --grid-half:   #151c28;
+  --grid-hour:   #1c2535;
+  --text:        #ccd6e8;
+  --text-muted:  #4a6080;
+  --text-dim:    #7090b0;
+  --accent:      #94b8d8;
+  --accent-glow: rgba(148, 184, 216, 0.25);
+  --accent-alt:  #7dd3fc;
+  --border:      #1c2535;
+}
+
+/* ── Base styles ────────────────────────────── */
+
+html { font-size: 15.5px; }
+[data-theme="gameboy"] { font-size: 10px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  line-height: 1.4;
+}

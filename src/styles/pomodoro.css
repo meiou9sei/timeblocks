@@ -1,0 +1,105 @@
+/* ── Pomodoro Timer ───────────────────────────── */
+
+.pomo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: 52px;
+}
+
+.pomo-label {
+  color: var(--accent);
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.pomo-label svg {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+}
+
+/* ── Vertical bar ────────────────────────────── */
+
+.pomo-bar-wrap {
+  position: relative;
+  width: 28px;
+  height: 150px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pomo-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 70%, white)
+  );
+  transition: height 1s linear;
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* Ringing state — red flash */
+.pomo--ringing .pomo-fill {
+  height: 100% !important;
+  background: var(--danger);
+  animation: pomo-pulse 0.9s ease-in-out infinite;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--danger) 60%, transparent);
+}
+
+@keyframes pomo-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
+/* ── Time readout ────────────────────────────── */
+
+.pomo-time {
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.pomo-time--alert {
+  color: var(--danger);
+  animation: pomo-pulse 0.9s ease-in-out infinite;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+
+.pomo-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 28px;
+  height: 22px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.pomo-btn:hover            { color: var(--accent); border-color: var(--accent); }
+.pomo-btn--stop:hover      { color: var(--danger); border-color: var(--danger); }
+.pomo-btn--dismiss         {
+  color: var(--danger);
+  border-color: var(--danger);
+  animation: pomo-pulse 0.9s ease-in-out infinite;
+}
+.pomo-btn--dismiss:hover   { opacity: 1; animation: none; filter: brightness(1.2); }

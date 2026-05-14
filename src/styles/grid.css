@@ -1,0 +1,146 @@
+/* ── Time grid wrapper (scrollable) ─────────── */
+
+.time-grid-wrapper {
+  flex: 1;
+  align-self: flex-start;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--grid-hour);
+  border-radius: 4px;
+  background: var(--bg-deep);
+  scroll-behavior: smooth;
+}
+
+.time-grid-wrapper::-webkit-scrollbar { width: 6px; }
+.time-grid-wrapper::-webkit-scrollbar-track { background: var(--bg-deep); }
+.time-grid-wrapper::-webkit-scrollbar-thumb { background: var(--grid-hour); border-radius: 3px; }
+
+.time-grid-inner {
+  display: flex;
+  min-height: calc(var(--row-h) * 49);
+  position: relative;
+}
+
+/* ── Time labels column ─────────────────────── */
+
+.time-labels {
+  width: var(--label-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--grid-hour);
+  background: var(--bg-card);
+}
+
+/* Spacer that mirrors .track-headers height so labels align with track cells */
+.time-labels-spacer {
+  padding: 6px 0 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.time-labels-spacer::before {
+  content: '\00a0'; /* invisible text to match track-header line height */
+  visibility: hidden;
+}
+
+.time-label {
+  height: var(--row-h);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0 10px 0 0;
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  user-select: none;
+  overflow: visible;
+}
+.time-label--hour {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.63rem;
+}
+/* Center hour text ON the grid line — half above, half below */
+.time-label-text {
+  display: block;
+  transform: translateY(-50%);
+  line-height: 1;
+}
+.time-label-half {
+  color: var(--grid-hour);
+  font-size: 0.5rem;
+  margin-top: 2px;
+}
+
+/* ── Two-track layout ───────────────────────── */
+
+.time-cells-wrapper { flex: 1; position: relative; }
+
+.tracks-outer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.track-headers {
+  display: flex;
+  border-bottom: 1px solid var(--grid-hour);
+  background: var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.track-header {
+  flex: 1;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  padding: 6px 0 5px;
+  user-select: none;
+}
+
+.track-header--ideal  { color: var(--accent);     border-right: 1px solid var(--grid-hour); }
+.track-header--actual { color: var(--accent-alt); }
+
+.tracks-body { display: flex; flex: 1; position: relative; }
+
+.track-wrapper { flex: 1; position: relative; overflow: hidden; }
+
+.track-divider { width: 1px; background: var(--grid-hour); flex-shrink: 0; }
+
+.track {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Drop cells ─────────────────────────────── */
+
+.time-cells { display: flex; flex-direction: column; border-bottom: 1px solid var(--grid-hour); }
+
+.time-cell {
+  height: var(--row-h);
+  border-bottom: 1px solid var(--grid-half);
+  box-sizing: border-box;
+  transition: background 0.05s;
+}
+.time-cell--hour       { border-bottom-color: var(--grid-hour); }
+.time-cell--highlight  { background: color-mix(in srgb, var(--accent) 7%, transparent) !important; }
+
+/* ── Current time line ──────────────────────── */
+
+.current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--danger);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 0 6px var(--danger), 0 1px 0 rgba(0,0,0,0.6);
+}

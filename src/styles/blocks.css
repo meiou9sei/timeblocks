@@ -1,0 +1,244 @@
+/* ── Placed block base ──────────────────────── */
+
+.placed-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  border-radius: var(--radius);
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3px 44px 3px 9px;
+  overflow: hidden;
+  border-left: 3px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.07) inset,
+    0 0 14px color-mix(in srgb, var(--glow, transparent) 30%, transparent);
+  z-index: 2;
+  transition: filter 0.1s, box-shadow 0.1s;
+  user-select: none;
+}
+
+/* Subtle inner-light shimmer overlay */
+.placed-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, transparent 55%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.placed-block:hover {
+  filter: brightness(1.08);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 22px color-mix(in srgb, var(--glow, transparent) 45%, transparent);
+}
+.placed-block:active { cursor: grabbing; }
+
+/* Pencil edit hint — fades in on hover */
+.placed-block::before {
+  display: none;
+}
+
+/* ── Block text content ─────────────────────── */
+
+.placed-block-name {
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.placed-block-time {
+  font-size: 0.58rem;
+  opacity: 0.65;
+  margin-top: 2px;
+}
+.placed-block-desc {
+  font-size: 0.58rem;
+  font-style: italic;
+  opacity: 0.7;
+  margin-top: 2px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  pointer-events: none;
+}
+
+/* ── Remove + Edit buttons (top-right, appear on hover) ─── */
+
+.placed-block-buttons {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  z-index: 3;
+}
+
+.placed-block-edit,
+.placed-block-move,
+.placed-block-remove {
+  width: 18px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+  padding: 0;
+  line-height: 1;
+  z-index: 3;
+}
+.placed-block-move  { font-size: 0.85rem; }
+.placed-block-edit  { font-size: 0.8rem; }
+.placed-block-remove { font-size: 0.85rem; }
+
+.placed-block:hover .placed-block-edit,
+.placed-block:hover .placed-block-move,
+.placed-block:hover .placed-block-remove { opacity: 0.85; }
+.placed-block-edit:hover,
+.placed-block-move:hover,
+.placed-block-remove:hover { opacity: 1 !important; background: rgba(0,0,0,0.5) !important; }
+
+/* ── Resize handles ──────────────────────────── */
+
+.placed-block-resize-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 7px;
+  cursor: ns-resize;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius) var(--radius) 0 0;
+  z-index: 4;
+  transition: background 0.1s;
+}
+.placed-block-resize-top:hover { background: rgba(255, 255, 255, 0.22); }
+
+.placed-block-resize {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 7px;
+  cursor: ns-resize;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 4;
+  transition: background 0.1s;
+}
+.placed-block-resize:hover { background: rgba(255, 255, 255, 0.22); }
+.placed-block-resize::after {
+  content: '⠿';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.45rem;
+  opacity: 0.4;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+/* ── Procrastination beer icon ───────────────── */
+
+.placed-block-procrast-icon {
+  position: absolute;
+  bottom: 9px;
+  right: 5px;
+  width: 13px;
+  height: 13px;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-density="compact"] .placed-block-procrast-icon {
+  width: 10px;
+  height: 10px;
+  bottom: 4px;
+  right: 4px;
+}
+
+/* ── Selected state ─────────────────────────── */
+
+.placed-block--selected {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: -2px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 22px color-mix(in srgb, var(--glow, transparent) 60%, transparent);
+  z-index: 3;
+}
+
+/* ── Ghost blocks (ideal shown in actual track) */
+
+.placed-block--ghost {
+  pointer-events: none;
+  opacity: 0.2;
+  border-left-color: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+  z-index: 1;
+  cursor: default;
+}
+.placed-block--ghost .placed-block-name { font-size: 0.68rem; }
+.placed-block--ghost::after { display: none; }
+.placed-block--ghost::before { display: none; }
+
+/* ── Compact density overrides ──────────────── */
+
+[data-density="compact"] .placed-block {
+  padding: 1px 36px 1px 6px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0 0.35rem;
+}
+
+[data-density="compact"] .placed-block-name {
+  font-size: 0.65rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+[data-density="compact"] .placed-block-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+[data-density="compact"] .placed-block-time {
+  margin-top: 0;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+[data-density="compact"] .placed-block-desc {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  margin-top: 0;
+  font-size: 0.55rem;
+}
+
+[data-density="compact"] .placed-block-buttons {
+  top: 50%;
+  transform: translateY(-50%);
+}

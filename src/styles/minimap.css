@@ -1,0 +1,137 @@
+/* ── Minimap ─────────────────────────────────── */
+
+.minimap {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 52px;
+}
+
+.minimap-track-headers {
+  display: flex;
+  justify-content: space-around;
+  padding: 4px 0 2px;
+  font-family: var(--font);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.minimap-body {
+  position: relative;
+  height: 240px; /* 48 slots × 5px */
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: ns-resize;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.minimap-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--grid-hour);
+  pointer-events: none;
+}
+
+.minimap-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 44%;
+}
+
+.minimap-track--ideal  { left: 2%; }
+.minimap-track--actual { right: 2%; }
+
+.minimap-block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 1px;
+  opacity: 0.85;
+}
+
+.minimap-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* ── Color Breakdown ─────────────────────────── */
+
+.color-breakdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: 52px;
+}
+
+.color-breakdown-toggle {
+  display: flex;
+  gap: 2px;
+}
+
+.cb-toggle-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  width: 18px;
+  height: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: var(--font);
+}
+
+.cb-toggle-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.color-breakdown-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 2px;
+  width: 100%;
+  padding: 0;
+}
+
+.cb-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: default;
+  min-width: 0;
+}
+
+.cb-swatch {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cb-pct {
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  font-family: var(--font);
+  white-space: nowrap;
+  overflow: visible;
+}

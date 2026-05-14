@@ -1,0 +1,200 @@
+/* ── App shell ──────────────────────────────── */
+
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 1.5rem;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--grid-hour);
+}
+
+.app-title {
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: 0.45em;
+  color: var(--accent);
+  text-shadow: 0 0 28px var(--accent-glow), 0 0 8px var(--accent-glow);
+  line-height: 1;
+}
+
+.app-subtitle {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.settings-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.settings-btn:hover { color: var(--accent); }
+
+.schedule-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.4rem;
+  line-height: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+.schedule-btn:hover { color: var(--accent); }
+
+.app-body {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+}
+
+.left-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  width: 52px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+.left-sidebar--hidden {
+  display: none;
+}
+
+.app-quote {
+  font-size: 0.58rem;
+  font-style: italic;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  margin-top: 1rem;
+  padding: 0 0.2rem;
+  user-select: none;
+}
+
+/* ── Auth avatar (header) ───────────────────── */
+
+.auth-avatar-btn {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--text-dim);
+  background: var(--bg-card);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 0.3rem;
+  align-self: center;
+  margin-top: 2px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.auth-avatar-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.auth-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.auth-avatar-initial {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  line-height: 1;
+}
+
+/* ── User dropdown menu ─────────────────────── */
+
+.app-header-actions {
+  position: relative;
+}
+
+.user-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 150px;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.user-menu-greeting {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding: 0.1rem 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-family: var(--font);
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+  text-align: left;
+}
+.user-menu-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.user-menu-btn--signin { color: var(--text-dim); }
