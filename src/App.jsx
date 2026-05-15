@@ -226,7 +226,7 @@ export default function App() {
       const next = prev.filter(b => !b.deleted || placedIds.has(b.id))
       return next.length === prev.length ? prev : next
     })
-  }, [ideal, actual])
+  }, [blocks, ideal, actual])
 
   const handleSignIn  = useCallback(() => signInWithPopup(auth, googleProvider), [])
   const handleSignOut = useCallback(() => signOut(auth), [])
@@ -237,6 +237,7 @@ export default function App() {
   }
 
 
+  useEffect(() => { localStorage.setItem('tb-blocks',   JSON.stringify(blocks))   }, [blocks])
   useEffect(() => { localStorage.setItem('tb-ideal',    JSON.stringify(ideal))    }, [ideal])
   useEffect(() => { localStorage.setItem('tb-actual',   JSON.stringify(actual))   }, [actual])
   useEffect(() => { localStorage.setItem('tb-settings', JSON.stringify(settings)) }, [settings])
@@ -532,7 +533,9 @@ export default function App() {
 
   const handleApplyTemplate = useCallback((template, targetTrack, replace) => {
     const existingIds = new Set(blocks.map(b => b.id))
-    const toRestore = Object.values(template.blockDefs).filter(b => !existingIds.has(b.id))
+    const toRestore = Object.values(template.blockDefs)
+      .filter(b => !existingIds.has(b.id))
+      .map(b => ({ ...b, paletteHidden: true }))
     if (toRestore.length > 0) setBlocks(prev => [...prev, ...toRestore])
     const setter = targetTrack === 'ideal' ? setIdeal : setActual
     const newItems = template.placedItems.map(p => ({ ...p, id: uid() }))
