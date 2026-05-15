@@ -228,7 +228,7 @@
 }
 .mobile-menu-icon svg { width: 18px; height: 18px; }
 
-/* ── No-drag / click-to-place mode ───────────── */
+/* ── No-drag / tap-to-place mode ─────────────── */
 
 .palette-block--picking {
   outline: 2px solid rgba(255,255,255,0.9);

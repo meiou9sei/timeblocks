@@ -102,9 +102,12 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
             <button
               className={`toggle-btn ${settings.noDragMode ? 'toggle-btn--active' : ''}`}
               onClick={() => set('noDragMode', true)}
-            >Click to place</button>
+            >Tap to place</button>
           </div>
-          <p className="settings-hint">Click to place: click a block in the palette, then click a slot on the grid.</p>
+          <p className="settings-hint">
+            <strong>Drag & drop</strong> — drag a block from the palette onto the grid. Default on desktop.{' '}
+            <strong>Tap to place</strong> — tap a block to select it, then tap a slot on the grid to place it. Default on mobile.
+          </p>
         </div>
 
         {/* Time format */}

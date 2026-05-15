@@ -98,6 +98,7 @@ export default function App() {
   const gridScrollRef = useRef(null)
   const saveTimerRef = useRef(null)
   const initialSnapshotRef = useRef(false)
+  const skipNextSaveRef = useRef(false)
 
   // ── Undo / Redo history ───────────────────────────────────────────────────
   const historyRef   = useRef([])
@@ -172,10 +173,11 @@ export default function App() {
             initialSnapshotRef.current = true
             if (snap.exists()) {
               const d = snap.data()
+              skipNextSaveRef.current = true
               if (d.blocks)        setBlocks(d.blocks)
               if (d.ideal)         setIdeal(d.ideal)
               if (d.actual)        setActual(d.actual)
-              if (d.settings)      setSettings(d.settings)
+              if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
               if (d.templates)     setTemplates(d.templates)
               if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
             }
@@ -185,10 +187,11 @@ export default function App() {
           if (snap.metadata.hasPendingWrites) return
           if (snap.exists()) {
             const d = snap.data()
+            skipNextSaveRef.current = true
             if (d.blocks)        setBlocks(d.blocks)
             if (d.ideal)         setIdeal(d.ideal)
             if (d.actual)        setActual(d.actual)
-            if (d.settings)      setSettings(d.settings)
+            if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
             if (d.templates)     setTemplates(d.templates)
             if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
           }
@@ -207,11 +210,23 @@ export default function App() {
   // Debounced Firestore save
   useEffect(() => {
     if (!user) return
+    if (!initialSnapshotRef.current) return   // don't save before first snapshot lands
+    if (skipNextSaveRef.current) { skipNextSaveRef.current = false; return }  // remote update, not a local change
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
-      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings, templates, procrastTasks })
+      const { noDragMode: _local, ...syncedSettings } = settings
+      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, procrastTasks })
     }, 800)
   }, [blocks, ideal, actual, settings, templates, procrastTasks, user])
+
+  // Hard-delete soft-deleted blocks that no longer have any placements
+  useEffect(() => {
+    const placedIds = new Set([...ideal, ...actual].map(p => p.blockId))
+    setBlocks(prev => {
+      const next = prev.filter(b => !b.deleted || placedIds.has(b.id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [ideal, actual])
 
   const handleSignIn  = useCallback(() => signInWithPopup(auth, googleProvider), [])
   const handleSignOut = useCallback(() => signOut(auth), [])
