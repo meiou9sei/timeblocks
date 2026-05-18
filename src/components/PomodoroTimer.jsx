@@ -1,61 +1,57 @@
 import { useState, useEffect, useRef } from 'react'
 
-function startAlarm(audioCtxRef, alarmRef) {
-  const ctx = new AudioContext()
-  audioCtxRef.current = ctx
+const ORIGINAL_TITLE = document.title
 
-  function beep() {
-    if (!audioCtxRef.current) return
-    const now = ctx.currentTime
+function requestNotifyPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission()
+  }
+}
 
-    // Two-tone alarm: hi-lo pattern
-    ;[0, 0.18].forEach((offset, i) => {
-      const osc  = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.type = 'square'
-      osc.frequency.value = i === 0 ? 880 : 660
-      gain.gain.setValueAtTime(0, now + offset)
-      gain.gain.linearRampToValueAtTime(0.12, now + offset + 0.02)
-      gain.gain.setValueAtTime(0.12, now + offset + 0.13)
-      gain.gain.linearRampToValueAtTime(0, now + offset + 0.16)
-      osc.start(now + offset)
-      osc.stop(now + offset + 0.18)
+function startAlarm(titleFlashRef) {
+  // OS notification (works when tabbed away)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('⏰ Timer Done!', {
+      body: 'Your Pomodoro session is complete.',
+      icon: '/favicon.ico',
+      requireInteraction: true,
     })
   }
 
-  beep()
-  alarmRef.current = setInterval(beep, 900)
+  // Tab title flashing
+  let on = true
+  titleFlashRef.current = setInterval(() => {
+    document.title = on ? '⏰ TIME\'S UP!' : ORIGINAL_TITLE
+    on = !on
+  }, 800)
 }
 
-function stopAlarm(audioCtxRef, alarmRef) {
-  clearInterval(alarmRef.current)
-  alarmRef.current = null
-  audioCtxRef.current?.close()
-  audioCtxRef.current = null
+function stopAlarm(titleFlashRef) {
+  clearInterval(titleFlashRef.current)
+  titleFlashRef.current = null
+  document.title = ORIGINAL_TITLE
 }
 
 export default function PomodoroTimer({ minutes = 25 }) {
   const DURATION = minutes * 60
   const [phase, setPhase]         = useState('idle')    // 'idle' | 'running' | 'ringing'
   const [remaining, setRemaining] = useState(() => minutes * 60)
-  const intervalRef  = useRef(null)
-  const audioCtxRef  = useRef(null)
-  const alarmRef     = useRef(null)
+  const intervalRef    = useRef(null)
+  const titleFlashRef  = useRef(null)
 
   const progress = (DURATION - remaining) / DURATION
   const mins = String(Math.floor(remaining / 60)).padStart(2, '0')
   const secs = String(remaining % 60).padStart(2, '0')
 
   function start() {
+    requestNotifyPermission()
     setPhase('running')
     intervalRef.current = setInterval(() => {
       setRemaining(prev => {
         if (prev <= 1) {
           clearInterval(intervalRef.current)
           setPhase('ringing')
-          startAlarm(audioCtxRef, alarmRef)
+          startAlarm(titleFlashRef)
           return 0
         }
         return prev - 1
@@ -70,7 +66,7 @@ export default function PomodoroTimer({ minutes = 25 }) {
   }
 
   function dismiss() {
-    stopAlarm(audioCtxRef, alarmRef)
+    stopAlarm(titleFlashRef)
     setPhase('idle')
     setRemaining(DURATION)
   }
@@ -78,7 +74,7 @@ export default function PomodoroTimer({ minutes = 25 }) {
   // Cleanup on unmount
   useEffect(() => () => {
     clearInterval(intervalRef.current)
-    stopAlarm(audioCtxRef, alarmRef)
+    stopAlarm(titleFlashRef)
   }, [])
 
   // Reset when duration setting changes (only while idle)
