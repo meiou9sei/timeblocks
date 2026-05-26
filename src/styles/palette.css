@@ -347,7 +347,48 @@
 .create-btn:hover  { filter: brightness(1.1); box-shadow: 0 0 20px var(--accent-glow); }
 .create-btn:active { filter: brightness(0.9); }
 
-/* ── Compact density overrides ──────────────── */
+/* ── Distraction input (inside tab) ─────────── */
+.palette-distractions {
+  padding-top: 0.4rem;
+}
+
+.palette-distr-form {
+  margin-bottom: 0.4rem;
+}
+
+.distraction-view-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.68rem;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+  transition: opacity 0.12s;
+}
+.distraction-view-btn:hover { opacity: 1; }
+
+.distraction-input-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.distraction-input { flex: 1; margin-bottom: 0; }
+
+.distraction-add-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.12s, color 0.2s;
+}
+.distraction-add-btn:disabled { opacity: 0.35; cursor: default; }
+.distraction-add-btn:not(:disabled):hover { filter: brightness(1.1); }
 
 [data-density="compact"] .palette-block {
   padding: 0.22rem 0.5rem;

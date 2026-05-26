@@ -315,12 +315,63 @@
 .procrast-btn:hover { color: var(--accent); }
 .procrast-btn svg { width: 18px; height: 18px; }
 
+/* ── Distractions nav button ─────────────────── */
+.distractions-nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.12s, color 0.15s;
+  flex-shrink: 0;
+}
+.distractions-nav-btn:hover { opacity: 1; }
+.distractions-nav-btn svg { width: 18px; height: 18px; margin-top: 2px; }
+
+.distractions-icon {
+  width: 28px;
+  height: 28px;
+}
+
 /* ── Palette suggestion widget ───────────────── */
 
 .palette-procrast {
   border-top: 1px solid var(--border);
   padding-top: 0.75rem;
   margin-bottom: 0.5rem;
+}
+
+/* ── Palette tabs ─────────────────────────────── */
+.palette-tabs {
+  display: flex;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.palette-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.3rem 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.palette-tab:hover { color: var(--text-dim); }
+.palette-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .palette-procrast-header {
@@ -336,13 +387,13 @@
   color: var(--text-dim);
   font-size: 0.75rem;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0.25rem;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   align-self: center;
-  margin-top: -12px;
+  margin-left: auto;
   transition: color 0.15s, transform 0.3s;
 }
 .procrast-refresh-btn:hover { color: var(--accent); transform: rotate(180deg); }

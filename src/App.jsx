@@ -10,6 +10,7 @@ import Minimap from './components/Minimap.jsx'
 import ColorBreakdown from './components/ColorBreakdown.jsx'
 import PomodoroTimer from './components/PomodoroTimer.jsx'
 import ProcrastModal from './components/ProcrastModal.jsx'
+import DistractionsModal from './components/DistractionsModal.jsx'
 import TemplatesModal from './components/TemplatesModal.jsx'
 import PlacedBlockEditModal from './components/PlacedBlockEditModal.jsx'
 import HelpModal from './components/HelpModal.jsx'
@@ -69,9 +70,11 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false)
   const [showScheduleBuilder, setShowScheduleBuilder] = useState(false)
   const [showProcrast, setShowProcrast] = useState(false)
+  const [showDistractions, setShowDistractions] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [editingPlaced, setEditingPlaced] = useState(null) // { placed, track }
   const [procrastTasks, setProcrastTasks] = useState(() => load('tb-procrast', []))
+  const [distractions,  setDistractions]  = useState(() => load('tb-distractions', []))
   const [templates, setTemplates] = useState(() => load('tb-templates', []))
   const [selection, setSelection] = useState(new Set())
   const [selectionTrack, setSelectionTrack] = useState(null)
@@ -79,6 +82,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [user, setUser] = useState(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [pomoState, setPomoState] = useState({ phase: 'idle', progress: 0 })
   const [showMobileHint, setShowMobileHint] = useState(
     () => window.matchMedia('(max-width: 640px)').matches && !load('tb-mobile-hint-dismissed', false)
   )
@@ -241,10 +245,33 @@ export default function App() {
   useEffect(() => { localStorage.setItem('tb-ideal',    JSON.stringify(ideal))    }, [ideal])
   useEffect(() => { localStorage.setItem('tb-actual',   JSON.stringify(actual))   }, [actual])
   useEffect(() => { localStorage.setItem('tb-settings', JSON.stringify(settings)) }, [settings])
-  useEffect(() => { localStorage.setItem('tb-procrast',   JSON.stringify(procrastTasks)) }, [procrastTasks])
+  useEffect(() => { localStorage.setItem('tb-procrast',       JSON.stringify(procrastTasks)) }, [procrastTasks])
+  useEffect(() => { localStorage.setItem('tb-distractions',   JSON.stringify(distractions))  }, [distractions])
   useEffect(() => { localStorage.setItem('tb-templates',  JSON.stringify(templates))     }, [templates])
   useEffect(() => { document.documentElement.setAttribute('data-theme', settings.theme ?? 'dark') }, [settings.theme])
   useEffect(() => { document.documentElement.setAttribute('data-density', settings.density ?? 'normal') }, [settings.density])
+
+  useEffect(() => {
+    if (settings.pomodoroPageFill) {
+      if (pomoState.phase === 'running') {
+        document.body.style.setProperty('--pomo-fill-pct', `${pomoState.progress * 100}%`)
+        document.body.style.setProperty('--pomo-fill-color', 'color-mix(in srgb, var(--accent) 18%, transparent)')
+        document.body.classList.remove('pomo-ringing')
+      } else if (pomoState.phase === 'ringing') {
+        document.body.style.setProperty('--pomo-fill-pct', '100%')
+        document.body.style.setProperty('--pomo-fill-color', 'color-mix(in srgb, var(--accent) 18%, transparent)')
+        document.body.classList.add('pomo-ringing')
+      } else {
+        document.body.style.removeProperty('--pomo-fill-pct')
+        document.body.style.removeProperty('--pomo-fill-color')
+        document.body.classList.remove('pomo-ringing')
+      }
+    } else {
+      document.body.style.removeProperty('--pomo-fill-pct')
+      document.body.style.removeProperty('--pomo-fill-color')
+      document.body.classList.remove('pomo-ringing')
+    }
+  }, [settings.pomodoroPageFill, pomoState])
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -253,6 +280,7 @@ export default function App() {
       if (showHelp)           { setShowHelp(false);              return }
       if (showTemplates)      { setShowTemplates(false);         return }
       if (showProcrast)       { setShowProcrast(false);          return }
+      if (showDistractions)   { setShowDistractions(false);      return }
       if (showScheduleBuilder){ setShowScheduleBuilder(false);   return }
       if (showSettings)       { setShowSettings(false);          return }
     }
@@ -497,6 +525,25 @@ export default function App() {
     setProcrastTasks(reordered)
   }, [])
 
+  const handleDistractionAdd       = useCallback((text) => {
+    setDistractions(prev => [...prev, { id: uid(), text, done: false }])
+  }, [])
+  const handleDistractionToggle    = useCallback((id) => {
+    setDistractions(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
+  }, [])
+  const handleDistractionDelete    = useCallback((id) => {
+    setDistractions(prev => prev.filter(t => t.id !== id))
+  }, [])
+  const handleDistractionClearDone = useCallback(() => {
+    setDistractions(prev => prev.filter(t => !t.done))
+  }, [])
+  const handleDistractionReorder   = useCallback((reordered) => {
+    setDistractions(reordered)
+  }, [])
+  const handleDistractionEdit      = useCallback((id, text) => {
+    setDistractions(prev => prev.map(t => t.id === id ? { ...t, text } : t))
+  }, [])
+
   const handleProcrastEdit = useCallback((id, text) => {
     setProcrastTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t))
   }, [])
@@ -644,6 +691,14 @@ export default function App() {
               <path d="M14 9.5h1.5a2 2 0 0 1 0 4H14v-1.5h1.5a.5.5 0 0 0 0-1H14V9.5z" />
             </svg>
           </button>
+          <button className="distractions-nav-btn" onClick={() => setShowDistractions(true)} title="Brain Dump">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ display: 'block' }}>
+              <path d="M10 2a7 7 0 1 0 4.95 11.95l2.83 2.83a1 1 0 0 0 1.41-1.41l-2.83-2.83A7 7 0 0 0 10 2zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 10 4z"/>
+              <circle cx="7.5" cy="9" r="1"/>
+              <circle cx="10" cy="9" r="1"/>
+              <circle cx="12.5" cy="9" r="1"/>
+            </svg>
+          </button>
           <button className="settings-btn" onClick={() => setShowSettings(true)} title="Settings">
             ⚙
           </button>
@@ -771,7 +826,7 @@ export default function App() {
               scrollRef={gridScrollRef}
             />
           )}
-          {settings.showPomodoro !== false && <PomodoroTimer minutes={settings.pomodoroMinutes ?? 25} />}
+          {settings.showPomodoro !== false && <PomodoroTimer minutes={settings.pomodoroMinutes ?? 25} onProgress={(phase, progress) => setPomoState({ phase, progress })} />}
           {settings.showColorChart !== false && (
             <ColorBreakdown ideal={ideal} actual={actual} getBlock={getBlock} />
           )}
@@ -813,6 +868,8 @@ export default function App() {
           noDragMode={settings.noDragMode}
           picking={picking}
           onPick={handlePick}
+          onAddDistraction={handleDistractionAdd}
+          onOpenDistractions={() => setShowDistractions(true)}
         />
       </div>
 
@@ -868,6 +925,19 @@ export default function App() {
           onEdit={handleProcrastEdit}
           onImport={handleProcrastImport}
           onClose={() => setShowProcrast(false)}
+        />
+      )}
+
+      {showDistractions && (
+        <DistractionsModal
+          tasks={distractions}
+          onAdd={handleDistractionAdd}
+          onToggle={handleDistractionToggle}
+          onDelete={handleDistractionDelete}
+          onClearDone={handleDistractionClearDone}
+          onReorder={handleDistractionReorder}
+          onEdit={handleDistractionEdit}
+          onClose={() => setShowDistractions(false)}
         />
       )}
 

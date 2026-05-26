@@ -53,7 +53,7 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, procrastTasks = [], onProcrastDragStart, noDragMode, picking, onPick }) {
+export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, procrastTasks = [], onProcrastDragStart, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions }) {
   const [name,        setName]        = useState('')
   const [color,       setColor]       = useState(TETRIS_COLORS[0])
   const [duration,    setDuration]    = useState(2)
@@ -61,6 +61,9 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
   const [editingBlock, setEditingBlock] = useState(null)
   const [suggestionIds, setSuggestionIds] = useState([])
   const [dragOverId,  setDragOverId]  = useState(null)
+  const [distraction, setDistraction] = useState('')
+  const [distrAdded,  setDistrAdded]  = useState(false)
+  const [paletteTab,  setPaletteTab]  = useState('someday') // 'someday' | 'distractions'
   const reorderingId = useRef(null)
   const quote = useRef(QUOTES[Math.floor(Math.random() * QUOTES.length)]).current
 
@@ -83,6 +86,15 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
     if (!name.trim()) return
     onAddBlock({ name: name.trim(), color, duration, description: '' })
     setName('')
+  }
+
+  function handleAddDistraction(e) {
+    e.preventDefault()
+    if (!distraction.trim()) return
+    onAddDistraction(distraction.trim())
+    setDistraction('')
+    setDistrAdded(true)
+    setTimeout(() => setDistrAdded(false), 2000)
   }
 
   return (
@@ -187,30 +199,68 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
         />
       )}
 
-      {settings.showSomedayMaybe !== false && procrastTasks.filter(t => !t.done).length > 0 && (
+      {settings.showSomedayMaybe !== false && (
         <div className="palette-procrast">
-          <div className="palette-procrast-header">
-            <div className="palette-section-title">SOMEDAY MAYBE TASKS</div>
+          <div className="palette-tabs">
             <button
-              className="procrast-refresh-btn"
-              onClick={refreshSuggestions}
-              title="Shuffle suggestions"
-            >↻</button>
+              className={`palette-tab${paletteTab === 'someday' ? ' palette-tab--active' : ''}`}
+              onClick={() => setPaletteTab('someday')}
+            >SOMEDAY MAYBE</button>
+            <button
+              className={`palette-tab${paletteTab === 'distractions' ? ' palette-tab--active' : ''}`}
+              onClick={() => setPaletteTab('distractions')}
+            >DISTRACTIONS</button>
+            {paletteTab === 'someday' && (
+              <button
+                className="procrast-refresh-btn"
+                onClick={refreshSuggestions}
+                title="Shuffle suggestions"
+              >↻</button>
+            )}
           </div>
-          {suggestions.length === 0 ? (
-            <p className="palette-procrast-none">Hit ↻ to load suggestions</p>
-          ) : (
-            suggestions.map(task => (
-              <div
-                key={task.id}
-                className="procrast-suggestion"
-                draggable
-                onDragStart={() => onProcrastDragStart(task)}
-                onDragEnd={onDragEnd}
-              >
-                <span className="procrast-suggestion-text">{task.text}</span>
-              </div>
-            ))
+
+          {paletteTab === 'someday' && (
+            <>
+              {procrastTasks.filter(t => !t.done).length === 0 ? (
+                <p className="palette-procrast-none">No pending tasks in Happy Hour.</p>
+              ) : suggestions.length === 0 ? (
+                <p className="palette-procrast-none">Hit ↻ to load suggestions</p>
+              ) : (
+                suggestions.map(task => (
+                  <div
+                    key={task.id}
+                    className="procrast-suggestion"
+                    draggable
+                    onDragStart={() => onProcrastDragStart(task)}
+                    onDragEnd={onDragEnd}
+                  >
+                    <span className="procrast-suggestion-text">{task.text}</span>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+
+          {paletteTab === 'distractions' && (
+            <div className="palette-distractions">
+              <form className="palette-distr-form" onSubmit={handleAddDistraction}>
+                <div className="distraction-input-row">
+                  <input
+                    className="create-input distraction-input"
+                    placeholder="What's on your mind..."
+                    value={distraction}
+                    onChange={(e) => setDistraction(e.target.value)}
+                    maxLength={120}
+                  />
+                  <button type="submit" className="distraction-add-btn" disabled={!distraction.trim()}>
+                    {distrAdded ? '✓' : '+'}
+                  </button>
+                </div>
+              </form>
+              <button type="button" className="distraction-view-btn" onClick={onOpenDistractions}>
+                view all in Brain Dump →
+              </button>
+            </div>
           )}
         </div>
       )}

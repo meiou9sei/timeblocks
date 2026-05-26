@@ -145,11 +145,11 @@ function TrackColumn({
           >
             <div className="placed-block-text">
               <span className="placed-block-name">{block.name}</span>
-              {block.description && (
+              {block.description && p.duration > 1 && (
                 <span className="placed-block-desc" style={{ WebkitLineClamp: descLines }}>{block.description}</span>
               )}
             </div>
-            {p.duration > 1 && (
+            {true && (
               <span className="placed-block-time">
                 {formatTimeRange(p.startSlot, p.duration, fmt)}
               </span>

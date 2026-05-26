@@ -193,6 +193,21 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
           </div>
         </div>
 
+        <div className="settings-row">
+          <label className="settings-label">Pomodoro page fill</label>
+          <div className="toggle-group">
+            <button
+              className={`toggle-btn ${!settings.pomodoroPageFill ? 'toggle-btn--active' : ''}`}
+              onClick={() => set('pomodoroPageFill', false)}
+            >Off</button>
+            <button
+              className={`toggle-btn ${settings.pomodoroPageFill ? 'toggle-btn--active' : ''}`}
+              onClick={() => set('pomodoroPageFill', true)}
+            >On</button>
+          </div>
+          <p className="settings-hint">Page background fills as the timer runs.</p>
+        </div>
+
         {/* Widget visibility */}
         <div className="settings-row" style={{ gridColumn: '1 / -1' }}>
           <label className="settings-label">Show widgets</label>
@@ -201,7 +216,7 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
               ['showMinimap',      'Minimap'],
               ['showPomodoro',     'Pomodoro'],
               ['showColorChart',   'Color Chart'],
-              ['showSomedayMaybe', 'Someday Maybe'],
+              ['showSomedayMaybe', 'Task & Distraction Panel'],
               ['showQuotes',       'Quotes'],
             ].map(([key, label]) => (
               <button
