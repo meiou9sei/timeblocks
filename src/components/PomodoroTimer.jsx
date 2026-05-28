@@ -34,7 +34,7 @@ function stopAlarm(titleFlashRef) {
 
 export default function PomodoroTimer({ minutes = 25, onProgress }) {
   const DURATION = minutes * 60
-  const [phase, setPhase]         = useState('idle')    // 'idle' | 'running' | 'ringing'
+  const [phase, setPhase]         = useState('idle')
   const [remaining, setRemaining] = useState(() => minutes * 60)
   const intervalRef    = useRef(null)
   const titleFlashRef  = useRef(null)
@@ -43,7 +43,6 @@ export default function PomodoroTimer({ minutes = 25, onProgress }) {
   const mins = String(Math.floor(remaining / 60)).padStart(2, '0')
   const secs = String(remaining % 60).padStart(2, '0')
 
-  // Notify parent of phase/progress changes for page fill effect
   useEffect(() => {
     onProgress?.(phase, progress)
   }, [phase, progress]) // eslint-disable-line react-hooks/exhaustive-deps

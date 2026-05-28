@@ -109,8 +109,12 @@ export default function App() {
   const redoRef      = useRef([])
   const undoRedoRef  = useRef(null) // 'undo' | 'redo' | null
   const prevTrackRef = useRef(null)
+  const isResizingRef  = useRef(false)
+  const preResizeRef   = useRef(null)
+  const latestTrackRef = useRef(null)
 
   useEffect(() => {
+    latestTrackRef.current = { ideal, actual }
     if (prevTrackRef.current === null) {
       prevTrackRef.current = { ideal, actual }
       return
@@ -120,11 +124,28 @@ export default function App() {
       prevTrackRef.current = { ideal, actual }
       return
     }
+    if (isResizingRef.current) return
     // Regular change: push old state to history, clear redo stack
     historyRef.current = [...historyRef.current.slice(-49), prevTrackRef.current]
     redoRef.current = []
     prevTrackRef.current = { ideal, actual }
   }, [ideal, actual])
+
+  const handleResizeBegin = useCallback(() => {
+    isResizingRef.current = true
+    preResizeRef.current = prevTrackRef.current
+  }, [])
+
+  const handleResizeCommit = useCallback(() => {
+    if (!isResizingRef.current) return
+    isResizingRef.current = false
+    if (preResizeRef.current) {
+      historyRef.current = [...historyRef.current.slice(-49), preResizeRef.current]
+      redoRef.current = []
+      prevTrackRef.current = latestTrackRef.current
+      preResizeRef.current = null
+    }
+  }, [])
 
   const handleUndo = useCallback(() => {
     if (historyRef.current.length === 0) return
@@ -184,6 +205,7 @@ export default function App() {
               if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
               if (d.templates)     setTemplates(d.templates)
               if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
+              if (d.distractions)  setDistractions(d.distractions)
             }
             return
           }
@@ -198,6 +220,7 @@ export default function App() {
             if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
             if (d.templates)     setTemplates(d.templates)
             if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
+            if (d.distractions)  setDistractions(d.distractions)
           }
         })
       } else {
@@ -219,9 +242,9 @@ export default function App() {
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
       const { noDragMode: _local, ...syncedSettings } = settings
-      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, procrastTasks })
+      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, procrastTasks, distractions })
     }, 800)
-  }, [blocks, ideal, actual, settings, templates, procrastTasks, user])
+  }, [blocks, ideal, actual, settings, templates, procrastTasks, distractions, user])
 
   // Hard-delete soft-deleted blocks that no longer have any placements
   useEffect(() => {
@@ -250,28 +273,6 @@ export default function App() {
   useEffect(() => { localStorage.setItem('tb-templates',  JSON.stringify(templates))     }, [templates])
   useEffect(() => { document.documentElement.setAttribute('data-theme', settings.theme ?? 'dark') }, [settings.theme])
   useEffect(() => { document.documentElement.setAttribute('data-density', settings.density ?? 'normal') }, [settings.density])
-
-  useEffect(() => {
-    if (settings.pomodoroPageFill) {
-      if (pomoState.phase === 'running') {
-        document.body.style.setProperty('--pomo-fill-pct', `${pomoState.progress * 100}%`)
-        document.body.style.setProperty('--pomo-fill-color', 'color-mix(in srgb, var(--accent) 18%, transparent)')
-        document.body.classList.remove('pomo-ringing')
-      } else if (pomoState.phase === 'ringing') {
-        document.body.style.setProperty('--pomo-fill-pct', '100%')
-        document.body.style.setProperty('--pomo-fill-color', 'color-mix(in srgb, var(--accent) 18%, transparent)')
-        document.body.classList.add('pomo-ringing')
-      } else {
-        document.body.style.removeProperty('--pomo-fill-pct')
-        document.body.style.removeProperty('--pomo-fill-color')
-        document.body.classList.remove('pomo-ringing')
-      }
-    } else {
-      document.body.style.removeProperty('--pomo-fill-pct')
-      document.body.style.removeProperty('--pomo-fill-color')
-      document.body.classList.remove('pomo-ringing')
-    }
-  }, [settings.pomodoroPageFill, pomoState])
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -649,6 +650,38 @@ export default function App() {
 
   // Don't block render on auth — app works with localStorage while auth resolves
 
+  useEffect(() => {
+    function accentRgba(alpha) {
+      const hex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()
+      if (hex.startsWith('#') && hex.length === 7) {
+        const r = parseInt(hex.slice(1, 3), 16)
+        const g = parseInt(hex.slice(3, 5), 16)
+        const b = parseInt(hex.slice(5, 7), 16)
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`
+      }
+      return `rgba(0, 229, 255, ${alpha})`
+    }
+    if (settings.pomodoroPageFill) {
+      if (pomoState.phase === 'running') {
+        document.body.style.setProperty('--pomo-fill-tint', accentRgba(0.2))
+        document.body.style.setProperty('--pomo-fill-pct', `${pomoState.progress * 100}%`)
+        document.body.classList.remove('pomo-ringing')
+      } else if (pomoState.phase === 'ringing') {
+        document.body.style.setProperty('--pomo-fill-tint', accentRgba(0.2))
+        document.body.style.setProperty('--pomo-fill-pct', '100%')
+        document.body.classList.add('pomo-ringing')
+      } else {
+        document.body.style.removeProperty('--pomo-fill-tint')
+        document.body.style.removeProperty('--pomo-fill-pct')
+        document.body.classList.remove('pomo-ringing')
+      }
+    } else {
+      document.body.style.removeProperty('--pomo-fill-tint')
+      document.body.style.removeProperty('--pomo-fill-pct')
+      document.body.classList.remove('pomo-ringing')
+    }
+  }, [settings.pomodoroPageFill, settings.theme, pomoState])
+
   return (
     <div className="app">
       <div className="app-header-wrap">
@@ -845,6 +878,8 @@ export default function App() {
           onDragEnd={handleDragEnd}
           onDrop={handleDrop}
           onResize={handleResize}
+          onResizeStart={handleResizeBegin}
+          onResizeEnd={handleResizeCommit}
           onRemovePlaced={handleRemovePlaced}
           onEditPlaced={(placed, track) => setEditingPlaced({ placed, track })}
           getBlock={getBlock}

@@ -1,3 +1,28 @@
+/* ── Pomodoro page fill ───────────────────────── */
+
+.pomo-page-fill {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 50;
+  background: var(--accent);
+  opacity: 0.12;
+  transition: height 1s linear, opacity 0s;
+}
+
+.pomo-page-fill--ringing {
+  top: 0;
+  animation: pomo-page-flash 1s ease-in-out infinite;
+  transition: none;
+}
+
+@keyframes pomo-page-flash {
+  0%, 100% { opacity: 0.12; }
+  50%       { opacity: 0.4; }
+}
+
 /* ── Pomodoro Timer ───────────────────────────── */
 
 .pomo {

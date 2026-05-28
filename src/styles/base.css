@@ -428,20 +428,14 @@ html { font-size: 15.5px; }
   initial-value: 0%;
 }
 
-@property --pomo-fill-color {
-  syntax: '<color>';
-  inherits: false;
-  initial-value: transparent;
-}
-
 @keyframes pomo-ring-flash {
-  0%, 100% { --pomo-fill-color: color-mix(in srgb, var(--accent) 18%, transparent); }
-  50%       { --pomo-fill-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+  0%, 100% { --pomo-fill-pct: 100%; }
+  50%       { --pomo-fill-pct: 82%; }
 }
 
 body {
   background:
-    linear-gradient(to top, var(--pomo-fill-color, transparent) var(--pomo-fill-pct, 0%), transparent var(--pomo-fill-pct, 0%)),
+    linear-gradient(to top, var(--pomo-fill-tint, transparent) var(--pomo-fill-pct, 0%), transparent var(--pomo-fill-pct, 0%)),
     var(--bg);
   transition: --pomo-fill-pct 1s linear;
   color: var(--text);

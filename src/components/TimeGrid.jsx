@@ -208,7 +208,7 @@ function TrackColumn({
 export default function TimeGrid({
   blocks, ideal, actual, dragInfo, settings, scrollRef,
   selection, selectionTrack, onSelectionChange,
-  onDragStart, onDragEnd, onDrop, onResize, onRemovePlaced, onEditPlaced, getBlock, isOccupied,
+  onDragStart, onDragEnd, onDrop, onResize, onResizeStart, onResizeEnd, onRemovePlaced, onEditPlaced, getBlock, isOccupied,
   noDragMode, picking, onClickSlot, onClickPlaced,
 }) {
   const [hoverInfo, setHoverInfo] = useState(null) // { track, slot }
@@ -264,7 +264,7 @@ export default function TimeGrid({
       }
     }
 
-    function onUp() { justResized.current = true; setResizing(null) }
+    function onUp() { justResized.current = true; setResizing(null); onResizeEnd?.() }
 
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
@@ -336,6 +336,7 @@ export default function TimeGrid({
   const handleResizeStart = (e, p, track, isTop = false) => {
     e.preventDefault()
     e.stopPropagation()
+    onResizeStart?.()
     setResizing({ placedId: p.id, track, startSlot: p.startSlot, endSlot: p.startSlot + p.duration, isTop })
   }
 
