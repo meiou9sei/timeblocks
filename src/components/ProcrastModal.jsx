@@ -153,7 +153,7 @@ export default function ProcrastModal({ tasks, onAdd, onToggle, onDelete, onClea
             onChange={e => setEditText(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKey}
-            maxLength={100}
+            maxLength={1000}
           />
         ) : (
           <span
@@ -242,7 +242,7 @@ export default function ProcrastModal({ tasks, onAdd, onToggle, onDelete, onClea
           placeholder="What have you been putting off..."
           value={input}
           onChange={e => setInput(e.target.value)}
-          maxLength={100}
+          maxLength={1000}
           autoFocus={!window.matchMedia('(max-width: 640px)').matches}
         />
         <button type="submit" className="procrast-add-btn">+ ADD</button>

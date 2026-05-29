@@ -115,7 +115,7 @@ export default function DistractionsModal({ tasks, onAdd, onToggle, onDelete, on
             onChange={e => setEditText(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKey}
-            maxLength={120}
+            maxLength={1000}
           />
         ) : (
           <span
@@ -196,7 +196,7 @@ export default function DistractionsModal({ tasks, onAdd, onToggle, onDelete, on
           placeholder="What's on your mind..."
           value={input}
           onChange={e => setInput(e.target.value)}
-          maxLength={120}
+          maxLength={1000}
           autoFocus={!window.matchMedia('(max-width: 640px)').matches}
         />
         <button type="submit" className="procrast-add-btn">+ ADD</button>
