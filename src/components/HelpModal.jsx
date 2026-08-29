@@ -11,9 +11,11 @@ export default function HelpModal({ onClose }) {
           <section className="help-section">
             <h3 className="help-section-title">About</h3>
             <p className="help-text">
-              TIMEBLOCKS is a daily time-blocking planner. Build a schedule by dragging
-              activity blocks onto a 24-hour grid. Compare your <em>ideal</em> day against
-              what you <em>actually</em> did — side by side.
+              TIMEBLOCKS is a daily time-blocking planner with four tabs: <strong>Focus</strong> (what to
+              do right now), <strong>Schedule</strong> (the planning grid), <strong>Tree</strong> (break
+              goals into subgoals), and <strong>Rules</strong> (a running note to yourself). Build a
+              schedule by dragging activity blocks onto a 24-hour grid. Compare your <em>ideal</em> day
+              against what you <em>actually</em> did — side by side.
             </p>
           </section>
 
@@ -39,10 +41,59 @@ export default function HelpModal({ onClose }) {
           </section>
 
           <section className="help-section">
+            <h3 className="help-section-title">Task & Distraction Panel</h3>
+            <p className="help-text">
+              A tabbed widget below the palette with three tabs — drag any item onto the grid to
+              turn it into a placed block.
+            </p>
+            <ul className="help-list">
+              <li><strong>Today's MVP</strong> — 3 things you must get done today, plus a 4th slot for a reward that unlocks (turns green) once all 3 are checked off. Drag a goal onto the grid.</li>
+              <li><strong>Distractions</strong> — quick-add to your Brain Dump list without leaving the grid.</li>
+              <li><strong>Goals</strong> — subgoals you've starred on the Tree tab, ready to schedule.</li>
+            </ul>
+          </section>
+
+          <section className="help-section">
+            <h3 className="help-section-title">Focus Tab</h3>
+            <p className="help-text">
+              A near-full-screen view of whatever's happening right now. Checks the Actual track first,
+              falls back to Ideal if nothing's placed there — background and text color come from that
+              block's own color. Includes the same Pomodoro timer as the Schedule sidebar (see below),
+              just laid out horizontally. Click the italic line under the timer to write yourself a
+              motivational note.
+            </p>
+          </section>
+
+          <section className="help-section">
+            <h3 className="help-section-title">Tree Tab</h3>
+            <p className="help-text">
+              Set a goal, then break it into the smaller steps that get you there. Each goal is a tree —
+              a root bubble with subgoal bubbles branching below it — and multiple goals sit side by side.
+            </p>
+            <ul className="help-list">
+              <li>Click <strong>+ New Goal</strong> to start a tree, then <strong>+</strong> on any bubble to add a subgoal underneath it.</li>
+              <li>Hover a bubble and click the <strong>+</strong> that appears above it to insert a step between it and its parent.</li>
+              <li>Check a bubble off to mark it complete — click the date label in its corner to set or backfill when it was finished.</li>
+              <li>Star a subgoal (★) to surface it in the Schedule tab's Goals tab, ready to drag onto the grid.</li>
+              <li>Deleting a bubble with subgoals underneath asks whether to keep them (they move up a level) or delete the whole branch.</li>
+              <li>Collapse (▾/▸) or archive (▤) a goal to tuck it out of the way — archived goals drop out of the Goals tab and Recently Completed feed.</li>
+              <li>Click the board title ("YOUR GOALS") to rename it to anything — a weekly theme, for example.</li>
+            </ul>
+          </section>
+
+          <section className="help-section">
+            <h3 className="help-section-title">Rules Tab</h3>
+            <p className="help-text">
+              A plain textbox for writing down the rules you're holding yourself to this month —
+              no structure, just a running note.
+            </p>
+          </section>
+
+          <section className="help-section">
             <h3 className="help-section-title">Other Features</h3>
             <ul className="help-list">
               <li><strong>Templates</strong> — save a track's layout and reapply it on future days.</li>
-              <li><strong>Pomodoro timer</strong> — built-in focus timer in the left sidebar.</li>
+              <li><strong>Pomodoro timer</strong> — one shared timer, visible from both the Schedule sidebar and the Focus tab.</li>
               <li><strong>Minimap</strong> — thumbnail overview of the full 24-hour grid.</li>
               <li><strong>Color Breakdown</strong> — pie chart of time spent per block type.</li>
             </ul>

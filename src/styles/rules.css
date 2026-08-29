@@ -1,0 +1,40 @@
+/* ── Rules tab ─────────────────────────────────── */
+
+.rules-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rules-view-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rules-view-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.rules-textarea {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  padding: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.rules-textarea:focus { border-color: var(--accent); }
+.rules-textarea::placeholder { color: var(--text-muted); }

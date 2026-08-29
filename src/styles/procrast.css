@@ -330,6 +330,10 @@
 
 /* ── Today's MVP tab ──────────────────────────── */
 
+.palette-mvp {
+  padding-top: 0.4rem;
+}
+
 .palette-mvp-sub {
   font-size: 0.6rem;
   color: var(--text-muted);
@@ -387,7 +391,54 @@
 .mvp-goal-drag:hover { color: var(--accent); }
 .mvp-goal-drag--picking { color: var(--accent); }
 
+.mvp-reward {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border);
+}
+
+.mvp-reward-label {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.mvp-reward--unlocked .mvp-reward-label {
+  color: #4ade80;
+}
+
+.mvp-reward-input {
+  flex: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-style: italic;
+  padding: 0.35rem 0.55rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.mvp-reward-input:focus { border-color: var(--accent); }
+.mvp-reward-input::placeholder { color: var(--text-muted); }
+
+.mvp-reward--unlocked .mvp-reward-input {
+  border-color: #4ade80;
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+
 /* ── Goals tab ─────────────────────────────────── */
+
+.palette-goals {
+  padding-top: 0.4rem;
+}
 
 .palette-goals-none {
   font-size: 0.6rem;

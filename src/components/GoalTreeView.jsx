@@ -32,12 +32,39 @@ function formatCompletedDate(dateStr) {
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-function TreeNodeItem({ node, isRoot, focusNodeId, onTextChange, onAddChild, onInsertAbove, onDelete, onToggleDone, onDateChange, onToggleStar, onFocused }) {
-  const [editingDate, setEditingDate] = useState(false)
+function DeleteChoiceModal({ onKeepChildren, onDeleteAll, onCancel }) {
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+      if (e.key === 'Escape') onCancel()
+      else if (e.key === '1') onKeepChildren()
+      else if (e.key === '2') onDeleteAll()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onCancel, onKeepChildren, onDeleteAll])
 
-  function handleDelete() {
-    if (node.children.length > 0 && !window.confirm('Delete this subgoal and everything under it?')) return
-    onDelete(node.id)
+  return (
+    <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+      <div className="tree-delete-modal">
+        <p className="tree-delete-modal-text">This subgoal has its own subgoals underneath it. What would you like to do?</p>
+        <div className="tree-delete-modal-actions">
+          <button className="tree-delete-modal-btn" onClick={onKeepChildren}><kbd className="tree-delete-modal-key">1</kbd> Delete this, keep its subgoals</button>
+          <button className="tree-delete-modal-btn tree-delete-modal-btn--danger" onClick={onDeleteAll}><kbd className="tree-delete-modal-key">2</kbd> Delete this and all its subgoals</button>
+          <button className="tree-delete-modal-btn tree-delete-modal-btn--cancel" onClick={onCancel}>Cancel <span className="tree-delete-modal-esc">(Esc)</span></button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TreeNodeItem({ node, isRoot, focusNodeId, onTextChange, onAddChild, onInsertAbove, onDelete, onDeleteKeepChildren, onToggleDone, onDateChange, onToggleStar, onFocused }) {
+  const [editingDate, setEditingDate] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  function handleDeleteClick() {
+    if (node.children.length === 0) { onDelete(node.id); return }
+    setConfirmDelete(true)
   }
 
   return (
@@ -95,11 +122,18 @@ function TreeNodeItem({ node, isRoot, focusNodeId, onTextChange, onAddChild, onI
           <div className="tree-node-actions-right">
             <button className="tree-node-add" onClick={() => onAddChild(node.id)} title="Add subgoal">+</button>
             {!isRoot && (
-              <button className="tree-node-delete" onClick={handleDelete} title="Delete">×</button>
+              <button className="tree-node-delete" onClick={handleDeleteClick} title="Delete">×</button>
             )}
           </div>
         </div>
       </div>
+      {confirmDelete && (
+        <DeleteChoiceModal
+          onKeepChildren={() => { onDeleteKeepChildren(node.id); setConfirmDelete(false) }}
+          onDeleteAll={() => { onDelete(node.id); setConfirmDelete(false) }}
+          onCancel={() => setConfirmDelete(false)}
+        />
+      )}
       {node.children.length > 0 && (
         <ul>
           {node.children.map(child => (
@@ -111,6 +145,7 @@ function TreeNodeItem({ node, isRoot, focusNodeId, onTextChange, onAddChild, onI
               onAddChild={onAddChild}
               onInsertAbove={onInsertAbove}
               onDelete={onDelete}
+              onDeleteKeepChildren={onDeleteKeepChildren}
               onToggleDone={onToggleDone}
               onDateChange={onDateChange}
               onToggleStar={onToggleStar}
@@ -123,7 +158,7 @@ function TreeNodeItem({ node, isRoot, focusNodeId, onTextChange, onAddChild, onI
   )
 }
 
-function TreeSection({ tree, collapsed, onToggleCollapse, onDeleteTree, onToggleArchive, focusNodeId, onTextChange, onAddChild, onInsertAbove, onDelete, onToggleDone, onDateChange, onToggleStar, onFocused }) {
+function TreeSection({ tree, collapsed, onToggleCollapse, onDeleteTree, onToggleArchive, focusNodeId, onTextChange, onAddChild, onInsertAbove, onDelete, onDeleteKeepChildren, onToggleDone, onDateChange, onToggleStar, onFocused }) {
   return (
     <section className="tree-section">
       <header className="tree-section-header">
@@ -145,6 +180,7 @@ function TreeSection({ tree, collapsed, onToggleCollapse, onDeleteTree, onToggle
               onAddChild={onAddChild}
               onInsertAbove={onInsertAbove}
               onDelete={onDelete}
+              onDeleteKeepChildren={onDeleteKeepChildren}
               onToggleDone={onToggleDone}
               onDateChange={onDateChange}
               onToggleStar={onToggleStar}
@@ -196,7 +232,7 @@ function RecentlyCompleted({ trees }) {
   )
 }
 
-export default function GoalTreeView({ trees, onCreateTree, onDeleteTree, onNodeTextChange, onNodeAddChild, onNodeInsertAbove, onNodeDelete, onNodeToggleDone, onNodeDateChange, onNodeToggleStar, onToggleArchive }) {
+export default function GoalTreeView({ trees, onCreateTree, onDeleteTree, onNodeTextChange, onNodeAddChild, onNodeInsertAbove, onNodeDelete, onNodeDeleteKeepChildren, onNodeToggleDone, onNodeDateChange, onNodeToggleStar, onToggleArchive, boardTitle, onBoardTitleChange }) {
   const [focusNodeId, setFocusNodeId] = useState(null)
   const [collapsed, setCollapsed] = useState(() => new Set())
   const [showArchived, setShowArchived] = useState(false)
@@ -239,6 +275,7 @@ export default function GoalTreeView({ trees, onCreateTree, onDeleteTree, onNode
         onAddChild={(parentId) => handleAddChild(t.id, parentId)}
         onInsertAbove={(targetId) => handleInsertAbove(t.id, targetId)}
         onDelete={(nodeId) => onNodeDelete(t.id, nodeId)}
+        onDeleteKeepChildren={(nodeId) => onNodeDeleteKeepChildren(t.id, nodeId)}
         onToggleDone={(nodeId, done) => onNodeToggleDone(t.id, nodeId, done)}
         onDateChange={(nodeId, date) => onNodeDateChange(t.id, nodeId, date)}
         onToggleStar={(nodeId) => onNodeToggleStar(t.id, nodeId)}
@@ -250,7 +287,14 @@ export default function GoalTreeView({ trees, onCreateTree, onDeleteTree, onNode
   return (
     <div className="tree-view">
       <div className="tree-view-header">
-        <span className="tree-view-title">YOUR GOALS</span>
+        <input
+          type="text"
+          className="tree-view-title-input"
+          value={boardTitle}
+          onChange={(e) => onBoardTitleChange(e.target.value)}
+          placeholder="YOUR GOALS"
+          maxLength={60}
+        />
         <button className="tree-new-btn" onClick={onCreateTree} title="New goal tree">+ New Goal</button>
       </div>
 

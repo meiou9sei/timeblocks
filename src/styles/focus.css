@@ -1,0 +1,101 @@
+/* ── Focus tab: near-full-screen current-task view ── */
+
+.app--focus-view {
+  padding: 0.75rem;
+}
+
+.focus-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  border-radius: var(--radius);
+  padding: 2rem;
+  text-align: center;
+  transition: background 0.3s;
+}
+
+.focus-view--empty {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.focus-content {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.focus-time {
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.focus-name {
+  font-size: clamp(1.8rem, 6vw, 4rem);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  max-width: 90%;
+  word-break: break-word;
+}
+
+.focus-desc {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  max-width: 480px;
+  margin: 0;
+}
+
+.focus-empty-text {
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.focus-pomo-wrap {
+  width: 100%;
+  max-width: 640px;
+  flex-shrink: 0;
+}
+
+.focus-message {
+  width: 100%;
+  max-width: 640px;
+  margin: 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.focus-message:hover { opacity: 0.85; }
+
+.focus-message-input {
+  width: 100%;
+  max-width: 640px;
+  background: none;
+  border: none;
+  border-bottom: 1px dashed currentColor;
+  outline: none;
+  color: inherit;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-style: italic;
+  text-align: center;
+  opacity: 0.85;
+  padding: 0.2rem 0;
+  flex-shrink: 0;
+}
+.focus-message-input::placeholder { color: inherit; opacity: 0.6; }

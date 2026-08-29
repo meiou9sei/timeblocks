@@ -1,28 +1,3 @@
-/* ── Pomodoro page fill ───────────────────────── */
-
-.pomo-page-fill {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-  z-index: 50;
-  background: var(--accent);
-  opacity: 0.12;
-  transition: height 1s linear, opacity 0s;
-}
-
-.pomo-page-fill--ringing {
-  top: 0;
-  animation: pomo-page-flash 1s ease-in-out infinite;
-  transition: none;
-}
-
-@keyframes pomo-page-flash {
-  0%, 100% { opacity: 0.12; }
-  50%       { opacity: 0.4; }
-}
-
 /* ── Pomodoro Timer ───────────────────────────── */
 
 .pomo {
@@ -84,6 +59,72 @@
 @keyframes pomo-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.45; }
+}
+
+.pomo-full-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: pomo-full-flash 0.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pomo-full-flash {
+  0%, 100% { opacity: 0; }
+  50%       { opacity: 0.3; }
+}
+
+/* ── Horizontal layout (Focus tab) ─────────────── */
+
+.pomo--horizontal {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  gap: 0.9rem;
+}
+
+.pomo--horizontal .pomo-label svg {
+  width: 30px;
+  height: 30px;
+}
+
+.pomo--horizontal .pomo-bar-wrap {
+  width: auto;
+  height: 26px;
+  flex: 1;
+}
+
+.pomo--horizontal .pomo-fill {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: auto;
+  height: auto;
+  background: linear-gradient(
+    to right,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 70%, white)
+  );
+  border-radius: var(--radius) 0 0 var(--radius);
+  transition: width 1s linear;
+}
+
+.pomo--horizontal.pomo--ringing .pomo-fill {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.pomo--horizontal .pomo-time {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.pomo--horizontal .pomo-btn {
+  width: 44px;
+  height: 34px;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 /* ── Time readout ────────────────────────────── */

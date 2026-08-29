@@ -8,6 +8,7 @@ import SettingsModal from './components/SettingsModal.jsx'
 import Minimap from './components/Minimap.jsx'
 import ColorBreakdown from './components/ColorBreakdown.jsx'
 import PomodoroTimer from './components/PomodoroTimer.jsx'
+import { usePomodoro } from './hooks/usePomodoro.js'
 import DistractionsModal from './components/DistractionsModal.jsx'
 import TemplatesModal from './components/TemplatesModal.jsx'
 import PlacedBlockEditModal from './components/PlacedBlockEditModal.jsx'
@@ -15,7 +16,9 @@ import HelpModal from './components/HelpModal.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import MobileBlockBar from './components/MobileBlockBar.jsx'
 import GoalTreeView from './components/GoalTreeView.jsx'
-import { makeTree, updateNodeText, setNodeDone, toggleNodeStar, insertNodeAbove, addChildNode, removeNode, collectStarred } from './utils/tree.js'
+import FocusView from './components/FocusView.jsx'
+import RulesView from './components/RulesView.jsx'
+import { makeTree, updateNodeText, setNodeDone, toggleNodeStar, insertNodeAbove, addChildNode, removeNode, removeNodeKeepChildren, collectStarred, treeToStorage, treeFromStorage } from './utils/tree.js'
 import './styles/base.css'
 import './styles/layout.css'
 import './styles/grid.css'
@@ -27,6 +30,8 @@ import './styles/pomodoro.css'
 import './styles/procrast.css'
 import './styles/templates.css'
 import './styles/tree.css'
+import './styles/focus.css'
+import './styles/rules.css'
 import './styles/mobile.css'
 
 
@@ -60,7 +65,7 @@ function todayStr() {
 }
 
 function defaultMvp() {
-  return { date: todayStr(), goals: [{ text: '', done: false }, { text: '', done: false }, { text: '', done: false }] }
+  return { date: todayStr(), goals: [{ text: '', done: false }, { text: '', done: false }, { text: '', done: false }], reward: '' }
 }
 
 export default function App() {
@@ -89,6 +94,9 @@ export default function App() {
   })
   const [templates, setTemplates] = useState(() => load('tb-templates', []))
   const [trees, setTrees] = useState(() => load('tb-trees', []))
+  const [treeBoardTitle, setTreeBoardTitle] = useState(() => load('tb-tree-title', ''))
+  const [focusMessage, setFocusMessage] = useState(() => load('tb-focus-message', ''))
+  const [rules, setRules] = useState(() => load('tb-rules', ''))
   const [activeView, setActiveView] = useState(() => load('tb-active-view', 'schedule'))
   const [selection, setSelection] = useState(new Set())
   const [selectionTrack, setSelectionTrack] = useState(null)
@@ -97,7 +105,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [user, setUser] = useState(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [pomoState, setPomoState] = useState({ phase: 'idle', progress: 0 })
+  const pomo = usePomodoro(settings.pomodoroMinutes ?? 25)
   const [showMobileHint, setShowMobileHint] = useState(
     () => window.matchMedia('(max-width: 640px)').matches && !load('tb-mobile-hint-dismissed', false)
   )
@@ -219,7 +227,10 @@ export default function App() {
               if (d.actual)        setActual(d.actual)
               if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
               if (d.templates)     setTemplates(d.templates)
-              if (d.trees)         setTrees(d.trees)
+              if (d.trees)         setTrees(d.trees.map(treeFromStorage))
+              if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
+              if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
+              if (d.rules !== undefined) setRules(d.rules)
               if (d.distractions)  setDistractions(d.distractions)
               if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
             }
@@ -235,7 +246,10 @@ export default function App() {
             if (d.actual)        setActual(d.actual)
             if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
             if (d.templates)     setTemplates(d.templates)
-            if (d.trees)         setTrees(d.trees)
+            if (d.trees)         setTrees(d.trees.map(treeFromStorage))
+            if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
+            if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
+            if (d.rules !== undefined) setRules(d.rules)
             if (d.distractions)  setDistractions(d.distractions)
             if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
           }
@@ -259,9 +273,9 @@ export default function App() {
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
       const { noDragMode: _local, ...syncedSettings } = settings
-      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, trees, distractions, mvp })
+      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, trees: trees.map(treeToStorage), treeBoardTitle, focusMessage, rules, distractions, mvp })
     }, 800)
-  }, [blocks, ideal, actual, settings, templates, trees, distractions, mvp, user])
+  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, distractions, mvp, user])
 
   // Hard-delete soft-deleted blocks that no longer have any placements
   useEffect(() => {
@@ -289,6 +303,9 @@ export default function App() {
   useEffect(() => { localStorage.setItem('tb-mvp',            JSON.stringify(mvp))            }, [mvp])
   useEffect(() => { localStorage.setItem('tb-templates',  JSON.stringify(templates))     }, [templates])
   useEffect(() => { localStorage.setItem('tb-trees',          JSON.stringify(trees))          }, [trees])
+  useEffect(() => { localStorage.setItem('tb-tree-title',      JSON.stringify(treeBoardTitle)) }, [treeBoardTitle])
+  useEffect(() => { localStorage.setItem('tb-focus-message',  JSON.stringify(focusMessage))    }, [focusMessage])
+  useEffect(() => { localStorage.setItem('tb-rules',          JSON.stringify(rules))            }, [rules])
   useEffect(() => { localStorage.setItem('tb-active-view',    JSON.stringify(activeView))     }, [activeView])
   useEffect(() => { document.documentElement.setAttribute('data-theme', settings.theme ?? 'dark') }, [settings.theme])
   useEffect(() => { document.documentElement.setAttribute('data-density', settings.density ?? 'normal') }, [settings.density])
@@ -541,6 +558,9 @@ export default function App() {
   const handleMvpToggle = useCallback((idx) => {
     setMvp(prev => ({ ...prev, goals: prev.goals.map((g, i) => i === idx ? { ...g, done: !g.done } : g) }))
   }, [])
+  const handleMvpRewardChange = useCallback((text) => {
+    setMvp(prev => ({ ...prev, reward: text }))
+  }, [])
   const handleDistractionClearDone = useCallback(() => {
     setDistractions(prev => prev.filter(t => !t.done))
   }, [])
@@ -615,6 +635,10 @@ export default function App() {
     setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: removeNode(t.root, nodeId) } : t))
   }, [])
 
+  const handleTreeNodeDeleteKeepChildren = useCallback((treeId, nodeId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: removeNodeKeepChildren(t.root, nodeId) } : t))
+  }, [])
+
   const handleTreeNodeToggleDone = useCallback((treeId, nodeId, done) => {
     setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: setNodeDone(t.root, nodeId, done, done ? todayStr() : null) } : t))
   }, [])
@@ -630,6 +654,10 @@ export default function App() {
   const handleTreeArchiveToggle = useCallback((treeId) => {
     setTrees(prev => prev.map(t => t.id === treeId ? { ...t, archived: !t.archived } : t))
   }, [])
+
+  const handleTreeBoardTitleChange = useCallback((text) => setTreeBoardTitle(text), [])
+  const handleFocusMessageChange = useCallback((text) => setFocusMessage(text), [])
+  const handleRulesChange = useCallback((text) => setRules(text), [])
 
   const starredGoals = useMemo(() => {
     return trees
@@ -661,6 +689,11 @@ export default function App() {
       settings,
       templates,
       trees,
+      treeBoardTitle,
+      focusMessage,
+      rules,
+      distractions,
+      mvp,
     }, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
@@ -669,7 +702,7 @@ export default function App() {
     a.download = `timeblocks-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-  }, [blocks, ideal, actual, settings, templates, trees])
+  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, distractions, mvp])
 
   const handleImportData = useCallback((file) => {
     const reader = new FileReader()
@@ -682,6 +715,11 @@ export default function App() {
         if (d.settings)     setSettings(d.settings)
         if (d.templates)    setTemplates(d.templates)
         if (d.trees)        setTrees(d.trees)
+        if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
+        if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
+        if (d.rules !== undefined) setRules(d.rules)
+        if (d.distractions) setDistractions(d.distractions)
+        if (d.mvp)          setMvp(d.mvp)
       } catch { /* ignore bad files */ }
     }
     reader.readAsText(file)
@@ -701,11 +739,11 @@ export default function App() {
       return `rgba(0, 229, 255, ${alpha})`
     }
     if (settings.pomodoroPageFill) {
-      if (pomoState.phase === 'running') {
+      if (pomo.phase === 'running') {
         document.body.style.setProperty('--pomo-fill-tint', accentRgba(0.2))
-        document.body.style.setProperty('--pomo-fill-pct', `${pomoState.progress * 100}%`)
+        document.body.style.setProperty('--pomo-fill-pct', `${pomo.progress * 100}%`)
         document.body.classList.remove('pomo-ringing')
-      } else if (pomoState.phase === 'ringing') {
+      } else if (pomo.phase === 'ringing') {
         document.body.style.setProperty('--pomo-fill-tint', accentRgba(0.2))
         document.body.style.setProperty('--pomo-fill-pct', '0%')
         document.body.classList.add('pomo-ringing')
@@ -719,15 +757,15 @@ export default function App() {
       document.body.style.removeProperty('--pomo-fill-pct')
       document.body.classList.remove('pomo-ringing')
     }
-  }, [settings.pomodoroPageFill, settings.theme, pomoState])
+  }, [settings.pomodoroPageFill, settings.theme, pomo.phase, pomo.progress])
 
   return (
-    <div className={`app${activeView === 'tree' ? ' app--tree-view' : ''}`}>
+    <div className={`app${activeView === 'tree' ? ' app--tree-view' : ''}${activeView === 'focus' ? ' app--focus-view' : ''}`}>
       <div className="app-header-wrap">
       <header className="app-header">
         <div className="app-title-block">
           <h1 className="app-title">TIMEBLOCKS</h1>
-          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : 'drag · drop · build your day'}</p>
+          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : activeView === 'focus' ? 'what are you doing right now?' : activeView === 'rules' ? 'rules you\'re holding yourself to' : 'drag · drop · build your day'}</p>
         </div>
         <div className="app-header-actions">
           <div className="help-hint-wrap">
@@ -857,13 +895,21 @@ export default function App() {
 
       <div className="main-tabs">
         <button
+          className={`main-tab${activeView === 'focus' ? ' main-tab--active' : ''}`}
+          onClick={() => setActiveView('focus')}
+        >FOCUS</button>
+        <button
           className={`main-tab${activeView === 'schedule' ? ' main-tab--active' : ''}`}
           onClick={() => setActiveView('schedule')}
         >SCHEDULE</button>
         <button
           className={`main-tab${activeView === 'tree' ? ' main-tab--active' : ''}`}
           onClick={() => setActiveView('tree')}
-        >THE TREE</button>
+        >TREE</button>
+        <button
+          className={`main-tab${activeView === 'rules' ? ' main-tab--active' : ''}`}
+          onClick={() => setActiveView('rules')}
+        >RULES</button>
       </div>
 
       {activeView === 'schedule' && showMobileHint && settings.noDragMode && (
@@ -890,11 +936,26 @@ export default function App() {
           onNodeAddChild={handleTreeNodeAddChild}
           onNodeInsertAbove={handleTreeNodeInsertAbove}
           onNodeDelete={handleTreeNodeDelete}
+          onNodeDeleteKeepChildren={handleTreeNodeDeleteKeepChildren}
           onNodeToggleDone={handleTreeNodeToggleDone}
           onNodeDateChange={handleTreeNodeDateChange}
           onNodeToggleStar={handleTreeNodeToggleStar}
           onToggleArchive={handleTreeArchiveToggle}
+          boardTitle={treeBoardTitle}
+          onBoardTitleChange={handleTreeBoardTitleChange}
         />
+      ) : activeView === 'focus' ? (
+        <FocusView
+          ideal={ideal}
+          actual={actual}
+          getBlock={getBlock}
+          settings={settings}
+          pomo={pomo}
+          message={focusMessage}
+          onMessageChange={handleFocusMessageChange}
+        />
+      ) : activeView === 'rules' ? (
+        <RulesView rules={rules} onChange={handleRulesChange} />
       ) : (
       <div className="app-body">
         <div className={`left-sidebar${settings.showMinimap === false && settings.showPomodoro === false ? ' left-sidebar--hidden' : ''}`}>
@@ -907,7 +968,16 @@ export default function App() {
               scrollRef={gridScrollRef}
             />
           )}
-          {settings.showPomodoro !== false && <PomodoroTimer minutes={settings.pomodoroMinutes ?? 25} onProgress={(phase, progress) => setPomoState({ phase, progress })} />}
+          {settings.showPomodoro !== false && (
+            <PomodoroTimer
+              phase={pomo.phase}
+              remaining={pomo.remaining}
+              minutes={settings.pomodoroMinutes ?? 25}
+              onStart={pomo.start}
+              onCancel={pomo.cancel}
+              onDismiss={pomo.dismiss}
+            />
+          )}
           {settings.showColorChart !== false && (
             <ColorBreakdown ideal={ideal} actual={actual} getBlock={getBlock} />
           )}
@@ -954,6 +1024,7 @@ export default function App() {
           mvp={mvp}
           onMvpTextChange={handleMvpTextChange}
           onMvpToggle={handleMvpToggle}
+          onMvpRewardChange={handleMvpRewardChange}
           starredGoals={starredGoals}
           onAdhocDragStart={handleAdhocDragStart}
           onAdhocPick={handleAdhocPick}

@@ -53,7 +53,7 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions, mvp, onMvpTextChange, onMvpToggle, starredGoals = [], onAdhocDragStart, onAdhocPick }) {
+export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions, mvp, onMvpTextChange, onMvpToggle, onMvpRewardChange, starredGoals = [], onAdhocDragStart, onAdhocPick }) {
   const [name,        setName]        = useState('')
   const [color,       setColor]       = useState(TETRIS_COLORS[0])
   const [duration,    setDuration]    = useState(2)
@@ -237,13 +237,24 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                   )}
                 </label>
               ))}
+              <div className={`mvp-reward${mvp.goals.every(g => g.done) ? ' mvp-reward--unlocked' : ''}`}>
+                <span className="mvp-reward-label">{mvp.goals.every(g => g.done) ? 'UNLOCKED' : 'REWARD'}</span>
+                <input
+                  type="text"
+                  className="mvp-reward-input"
+                  placeholder="Your reward once all 3 are done..."
+                  value={mvp.reward || ''}
+                  onChange={(e) => onMvpRewardChange(e.target.value)}
+                  maxLength={80}
+                />
+              </div>
             </div>
           )}
 
           {paletteTab === 'goals' && (
             <div className="palette-goals">
               {starredGoals.length === 0 ? (
-                <p className="palette-goals-none">No starred subgoals yet. Star one in The Tree tab to see it here.</p>
+                <p className="palette-goals-none">No starred subgoals yet. Star one in the Tree tab to see it here.</p>
               ) : (
                 starredGoals.map(g => (
                   <div
