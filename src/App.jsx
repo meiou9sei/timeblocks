@@ -135,6 +135,8 @@ export default function App() {
   const isResizingRef  = useRef(false)
   const preResizeRef   = useRef(null)
   const latestTrackRef = useRef(null)
+  const [canUndo, setCanUndo] = useState(false)
+  const [canRedo, setCanRedo] = useState(false)
 
   useEffect(() => {
     latestTrackRef.current = { ideal, actual }
@@ -152,6 +154,8 @@ export default function App() {
     historyRef.current = [...historyRef.current.slice(-49), prevTrackRef.current]
     redoRef.current = []
     prevTrackRef.current = { ideal, actual }
+    setCanUndo(true)
+    setCanRedo(false)
   }, [ideal, actual])
 
   const handleResizeBegin = useCallback(() => {
@@ -167,6 +171,8 @@ export default function App() {
       redoRef.current = []
       prevTrackRef.current = latestTrackRef.current
       preResizeRef.current = null
+      setCanUndo(true)
+      setCanRedo(false)
     }
   }, [])
 
@@ -178,6 +184,8 @@ export default function App() {
     undoRedoRef.current = 'undo'
     setIdeal(prev.ideal)
     setActual(prev.actual)
+    setCanUndo(historyRef.current.length > 0)
+    setCanRedo(true)
   }, [])
 
   const handleRedo = useCallback(() => {
@@ -188,6 +196,8 @@ export default function App() {
     undoRedoRef.current = 'redo'
     setIdeal(next.ideal)
     setActual(next.actual)
+    setCanRedo(redoRef.current.length > 0)
+    setCanUndo(true)
   }, [])
 
   useEffect(() => {
@@ -838,6 +848,16 @@ export default function App() {
           </div>
         </div>
         <div className="hamburger-hint-wrap">
+          {activeView === 'schedule' && (
+            <>
+              <button className="undo-redo-btn--mobile" onClick={handleUndo} disabled={!canUndo} title="Undo">
+                ↺
+              </button>
+              <button className="undo-redo-btn--mobile" onClick={handleRedo} disabled={!canRedo} title="Redo">
+                ↻
+              </button>
+            </>
+          )}
           <button className="mobile-profile-btn" onClick={() => setShowAuthModal(true)} title={user ? (user.displayName || user.email) : 'Account'}>
             {user?.photoURL
               ? <img src={user.photoURL} alt="" className="auth-avatar-img" referrerPolicy="no-referrer" />

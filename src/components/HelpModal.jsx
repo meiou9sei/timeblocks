@@ -118,6 +118,10 @@ export default function HelpModal({ onClose }) {
 
           <section className="help-section">
             <h3 className="help-section-title">Keyboard Shortcuts</h3>
+            <p className="help-text">
+              On mobile, use the ↺ / ↻ buttons next to the menu icon instead — same undo/redo, no keyboard needed.
+              On desktop, keyboard shortcuts are the only way to undo/redo.
+            </p>
             <table className="help-keys">
               <tbody>
                 <tr>

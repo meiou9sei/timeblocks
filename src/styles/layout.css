@@ -60,6 +60,28 @@
 }
 .settings-btn:hover { color: var(--accent); }
 
+/* ── Undo / Redo (mobile only — desktop uses Cmd+Z) ─── */
+
+.undo-redo-btn--mobile {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  font-weight: 700;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.undo-redo-btn--mobile:hover { color: var(--text); border-color: var(--text-dim); }
+.undo-redo-btn--mobile:disabled { opacity: 0.3; cursor: not-allowed; }
+.undo-redo-btn--mobile:disabled:hover { color: var(--text-dim); }
+
 /* ── Main tab switcher ───────────────────────── */
 
 .main-tabs {

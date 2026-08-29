@@ -179,6 +179,10 @@
     overflow: hidden;
     flex-shrink: 0;
   }
+
+  .undo-redo-btn--mobile {
+    display: flex;
+  }
 }
 
 /* ── Hamburger button (hidden on desktop) ─────── */
