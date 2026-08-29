@@ -247,6 +247,17 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                   onChange={(e) => onMvpRewardChange(e.target.value)}
                   maxLength={80}
                 />
+                {mvp.reward.trim() && (
+                  <button
+                    type="button"
+                    className={`mvp-goal-drag${noDragMode && picking?.adhocText === mvp.reward ? ' mvp-goal-drag--picking' : ''}`}
+                    draggable={!noDragMode}
+                    onDragStart={(e) => { e.stopPropagation(); onAdhocDragStart(mvp.reward) }}
+                    onDragEnd={onDragEnd}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdhocClick(mvp.reward) }}
+                    title="Drag onto the schedule"
+                  >⠿</button>
+                )}
               </div>
             </div>
           )}
