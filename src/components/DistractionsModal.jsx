@@ -43,7 +43,7 @@ export default function DistractionsModal({ tasks, onAdd, onToggle, onDelete, on
 
   function handleEditKey(e) {
     if (e.key === 'Enter') { e.preventDefault(); commitEdit() }
-    if (e.key === 'Escape') { setEditingId(null) }
+    if (e.key === 'Escape') { e.stopPropagation(); setEditingId(null) }
   }
 
   function handleDragStart(e, id) {
@@ -115,7 +115,7 @@ export default function DistractionsModal({ tasks, onAdd, onToggle, onDelete, on
             onChange={e => setEditText(e.target.value)}
             onBlur={commitEdit}
             onKeyDown={handleEditKey}
-            maxLength={1000}
+            maxLength={5000}
           />
         ) : (
           <span
@@ -196,7 +196,7 @@ export default function DistractionsModal({ tasks, onAdd, onToggle, onDelete, on
           placeholder="What's on your mind..."
           value={input}
           onChange={e => setInput(e.target.value)}
-          maxLength={1000}
+          maxLength={5000}
           autoFocus={!window.matchMedia('(max-width: 640px)').matches}
         />
         <button type="submit" className="procrast-add-btn">+ ADD</button>

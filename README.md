@@ -1,8 +1,10 @@
 # Timeblocks
 
-A day-planning app built around time blocking. Design your ideal day, track how it actually goes, and compare the two side by side.
+A day-planning app built around time blocking, plus a goal-decomposition tool to feed it. Design your ideal day, track how it actually goes, and compare the two side by side — then break big goals into subgoals you can drag straight onto the schedule.
 
-## What it does
+The app has two tabs: **Schedule** (the time-blocking grid) and **The Tree** (goal trees).
+
+## Schedule
 
 Two parallel tracks — **Ideal** and **Actual** — let you plan your day in advance and log what really happened. Blocks are color-coded, resizable, and editable. Data persists locally and optionally syncs across devices via Google sign-in.
 
@@ -10,11 +12,10 @@ Two parallel tracks — **Ideal** and **Actual** — let you plan your day in ad
 - Drag-and-drop or tap-to-place blocks onto a 24-hour grid
 - Ideal vs. Actual track comparison
 - Block library with custom names, colors, and durations
-- Schedule Builder — auto-fills your day from a block list
 - Templates — save and reapply full day layouts
-- Procrastination Happy Hour — a side list of tasks you've been avoiding, draggable onto the grid
 - Brain Dump — a separate thought-capture list for distractions and stray ideas, accessible from the header and the Task & Distraction Panel in the sidebar
-- Task & Distraction Panel — tabbed sidebar widget with Someday Maybe task suggestions (from Happy Hour) and a quick distraction input
+- Task & Distraction Panel — tabbed sidebar widget with Today's MVP, starred Goals from The Tree, and a quick distraction input
+- Today's MVP and starred Goals are draggable straight onto the grid (spawns a block and places it)
 - Pomodoro timer with optional page-fill visual: background fills up as the timer runs, then flashes when done
 - Color breakdown chart
 - Undo / redo (Cmd+Z / Cmd+Shift+Z)
@@ -22,6 +23,20 @@ Two parallel tracks — **Ideal** and **Actual** — let you plan your day in ad
 - Keyboard shortcuts (Escape to deselect, Cmd+Enter to save in modals)
 - Google sign-in + email/password auth with Firestore sync
 - 30-minute blocks show only the block name and time, not the description
+
+## The Tree
+
+Set a goal, then break it into the smaller steps that get you there. Each goal is a tree — a root bubble with subgoal bubbles branching below it, connected by lines — and multiple goal trees sit side by side on the same board.
+
+**Features:**
+- Recursive subgoals — any bubble can have its own subgoals, nested as deep as you need
+- Checkbox to mark a bubble complete — dims the text and turns the border green
+- Click the small date label in the corner of a completed bubble to set or backfill the date it was finished
+- Insert a step between two connected bubbles — hover a bubble and click the "+" that appears above it
+- Star a subgoal to surface it in the Schedule tab's Goals tab, draggable onto the grid
+- Recently Completed strip at the top — your latest finished subgoals across all goals, grouped by date
+- Collapse/expand a goal, or archive it — archived goals move to a separate section out of the way and drop out of the Goals tab / Recently Completed feed
+- Multiple goals, deletable individually
 
 **Notifications:**
 - Browser notification when Pomodoro timer ends (fires even when tabbed away, requires permission)

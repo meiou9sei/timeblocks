@@ -247,7 +247,7 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
               onChange={e => { if (e.target.files[0]) { onImport(e.target.files[0]); e.target.value = '' } }}
             />
           </div>
-          <p className="settings-hint">Export saves all blocks, schedule, templates & happy hour tasks.</p>
+          <p className="settings-hint">Export saves all blocks, schedule & templates.</p>
         </div>
 
         {/* Reset */}

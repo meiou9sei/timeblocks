@@ -35,16 +35,6 @@ export default function HelpModal({ onClose }) {
               <li>Click <strong>+ New Block</strong> to create a reusable activity block with a name, color, and default duration.</li>
               <li>Hover a palette block to reveal edit (✎) and delete (×) buttons.</li>
               <li>Drag palette blocks to reorder them.</li>
-              <li>The <strong>Someday / Maybe</strong> list at the bottom lets you park tasks you might want to place later.</li>
-            </ul>
-          </section>
-
-          <section className="help-section">
-            <h3 className="help-section-title">Schedule Builder  ▦</h3>
-            <ul className="help-list">
-              <li><strong>Gravity Drop</strong> — pick blocks and drop them sequentially from a start time.</li>
-              <li><strong>Blueprint</strong> — define a repeating pattern (e.g. work / break / work) and tile it across the day.</li>
-              <li><strong>Daily Intake</strong> — list today's tasks with time estimates and let the app auto-create and place them.</li>
             </ul>
           </section>
 
@@ -54,7 +44,6 @@ export default function HelpModal({ onClose }) {
               <li><strong>Templates</strong> — save a track's layout and reapply it on future days.</li>
               <li><strong>Pomodoro timer</strong> — built-in focus timer in the left sidebar.</li>
               <li><strong>Minimap</strong> — thumbnail overview of the full 24-hour grid.</li>
-              <li><strong>Procrastination Happy Hour</strong> <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '1.1em', height: '1.1em', verticalAlign: 'text-bottom', display: 'inline', opacity: 0.75 }}><circle cx="4.5" cy="7" r="2.2" /><circle cx="8.5" cy="5.5" r="2.8" /><circle cx="12.5" cy="7" r="2.2" /><path d="M3 7h11v11a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 3 18V7z" /><path d="M14 9.5h1.5a2 2 0 0 1 0 4H14v-1.5h1.5a.5.5 0 0 0 0-1H14V9.5z" /></svg> — guilt-free task list; drag tasks onto the grid.</li>
               <li><strong>Color Breakdown</strong> — pie chart of time spent per block type.</li>
             </ul>
           </section>

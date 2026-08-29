@@ -73,7 +73,6 @@
   }
 
   .settings-modal,
-  .sb-modal,
   .help-modal,
   .auth-modal {
     width: 100%;
@@ -108,7 +107,7 @@
     font-size: 16px !important;
   }
 
-  /* Procrastination happy hour header */
+  /* List modal header (shared by Brain Dump / Templates) */
   .procrast-header {
     padding: 0.75rem 1rem;
     flex-wrap: wrap;
@@ -154,10 +153,30 @@
   display: none;
 }
 
+.mobile-profile-btn {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .hamburger-hint-wrap {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     position: relative;
+    flex-shrink: 0;
+  }
+
+  .mobile-profile-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    overflow: hidden;
     flex-shrink: 0;
   }
 }
@@ -453,53 +472,6 @@
   white-space: nowrap;
 }
 
-.mobile-bar-divider {
-  flex-shrink: 0;
-  width: 1px;
-  background: var(--border);
-  align-self: stretch;
-  margin: 0.5rem 0.1rem;
-}
-
-.mobile-block-tile-procrast-icon {
-  font-size: 0.85rem;
-  line-height: 1;
-}
-
-.mobile-procrast-overflow {
-  flex-shrink: 0;
-  width: 54px;
-  height: 54px;
-  padding: 4px;
-  background: none;
-  border: 1px solid #c87d2f;
-  border-radius: var(--radius);
-  color: #c87d2f;
-  cursor: pointer;
-  opacity: 0.7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  transition: opacity 0.12s;
-}
-.mobile-procrast-overflow:active { opacity: 1; }
-
-.mobile-procrast-overflow-icon {
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.mobile-procrast-overflow-label {
-  font-size: 0.46rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  text-align: center;
-}
-
 /* Center the block edit modal on mobile (override bottom-sheet default) */
 @media (max-width: 640px) {
   .modal-backdrop:has(.pbe-modal) {
@@ -626,37 +598,17 @@
   }
 }
 
-/* ── Builder: hide drag handle, show up/down btns ─ */
-
-.sb-order-btns { display: none; }
+/* ── Tree view: tighter canvas padding ────────── */
 
 @media (max-width: 640px) {
-  .sb-drag-handle { display: none !important; }
-  .sb-order-btns {
-    display: flex;
-    gap: 2px;
-    flex-shrink: 0;
-    margin-left: auto;
+  .tree-canvas {
+    padding: 0.75rem 0.4rem;
   }
-  .sb-order-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 0.75rem;
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: color 0.1s, border-color 0.1s;
-    flex-shrink: 0;
+  .tree-section {
+    min-width: 170px;
   }
-  .sb-order-btn:disabled { opacity: 0.22; cursor: not-allowed; }
-  .sb-order-btn:not(:disabled):hover { color: var(--accent); border-color: var(--accent); }
 }
+
 
 /* ── Readable text in modals on mobile ────────── */
 

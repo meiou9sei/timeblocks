@@ -40,50 +40,20 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-const PROCRAST_LIMIT = 3
-
-export default function MobileBlockBar({ blocks, procrastTasks = [], onAddBlock, noDragMode, picking, onPick, onEditBlock, onRemoveBlock }) {
+export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking, onPick, onEditBlock, onRemoveBlock }) {
   const [showPanel, setShowPanel] = useState(false)
   const [editingBlock, setEditingBlock] = useState(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState(TETRIS_COLORS[0])
   const [duration, setDuration] = useState(2)
   const [customColor, setCustomColor] = useState('#00e5ff')
-  const [shownProcrastIds, setShownProcrastIds] = useState([])
   const lastTapRef = useRef(null) // { blockId }
-
-  function pickRandom(tasks) {
-    return [...tasks].sort(() => Math.random() - 0.5).slice(0, PROCRAST_LIMIT).map(t => t.id)
-  }
-
-  // Keep shown IDs valid as tasks are added/removed; fill gaps with random picks
-  useEffect(() => {
-    const pending = procrastTasks.filter(t => !t.done)
-    const pendingIds = new Set(pending.map(t => t.id))
-    setShownProcrastIds(prev => {
-      const valid = prev.filter(id => pendingIds.has(id))
-      if (valid.length >= Math.min(PROCRAST_LIMIT, pending.length)) return valid.slice(0, PROCRAST_LIMIT)
-      const remaining = pending.filter(t => !valid.includes(t.id))
-      const extra = [...remaining].sort(() => Math.random() - 0.5).slice(0, PROCRAST_LIMIT - valid.length)
-      return [...valid, ...extra.map(t => t.id)]
-    })
-  }, [procrastTasks])
 
   useEffect(() => {
     if (!picking) lastTapRef.current = null
   }, [picking])
 
-  const visibleBlocks = blocks.filter(b => !b.procrast && !b.deleted && !b.paletteHidden)
-  const pendingProcrast = procrastTasks.filter(t => !t.done)
-  const shownProcrast = shownProcrastIds
-    .map(id => pendingProcrast.find(t => t.id === id))
-    .filter(Boolean)
-  const hasMoreProcrast = pendingProcrast.length > PROCRAST_LIMIT
-
-  function handleProcrastTileClick(task) {
-    const isPicking = picking?.procrastTaskId === task.id
-    onPick(isPicking ? null : { procrastTaskId: task.id, taskText: task.text, duration: 2 })
-  }
+  const visibleBlocks = blocks.filter(b => !b.deleted && !b.paletteHidden)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -193,36 +163,6 @@ export default function MobileBlockBar({ blocks, procrastTasks = [], onAddBlock,
               </button>
             )
           })}
-          {pendingProcrast.length > 0 && (
-            <>
-              <div className="mobile-bar-divider" />
-              {shownProcrast.map(task => {
-                const isPicking = picking?.procrastTaskId === task.id
-                return (
-                  <button
-                    key={task.id}
-                    type="button"
-                    className={`mobile-block-tile mobile-block-tile--procrast${isPicking ? ' mobile-block-tile--picking' : ''}`}
-                    style={{ background: '#c87d2f', color: '#fff', '--glow': '#c87d2f' }}
-                    onClick={() => handleProcrastTileClick(task)}
-                  >
-                    <span className="mobile-block-tile-procrast-icon">🍺</span>
-                    <span className="mobile-block-tile-name">{task.text}</span>
-                  </button>
-                )
-              })}
-              {hasMoreProcrast && (
-                <button
-                  type="button"
-                  className="mobile-procrast-overflow"
-                  onClick={() => setShownProcrastIds(pickRandom(pendingProcrast))}
-                >
-                  <span className="mobile-procrast-overflow-icon">↻</span>
-                  <span className="mobile-procrast-overflow-label">shake it up</span>
-                </button>
-              )}
-            </>
-          )}
         </div>
         <button
           className={`mobile-new-block-btn${showPanel ? ' mobile-new-block-btn--open' : ''}`}

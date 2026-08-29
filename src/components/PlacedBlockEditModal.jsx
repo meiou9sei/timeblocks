@@ -47,14 +47,24 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
     }
   }
 
+  const isDirty =
+    name.trim() !== block.name ||
+    color        !== block.color ||
+    description  !== (block.description ?? '') ||
+    duration     !== (placedDuration ?? block.duration ?? 2)
+
+  function maybeClose() {
+    if (!isDirty || window.confirm('Discard unsaved changes?')) onClose()
+  }
+
   useEffect(() => {
     function onKey(e) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') maybeClose()
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSave()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [name, color, description, duration])
+  }, [name, color, description, duration, isDirty])
 
   function handleSave() {
     if (!name.trim()) return
@@ -70,11 +80,11 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
   const light = isLight(color)
 
   return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && maybeClose()}>
       <div className="pbe-modal">
         <div className="pbe-header">
           <span className="pbe-title">Edit Block</span>
-          <button className="settings-modal-close" onClick={onClose}>✕</button>
+          <button className="settings-modal-close" onClick={maybeClose}>✕</button>
         </div>
 
         <input
@@ -160,7 +170,7 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
         <div className="pbe-actions">
           <button className="pbe-remove-btn" onClick={handleRemove}>Remove</button>
           <div style={{ display: 'flex', gap: '0.4rem' }}>
-            <button className="palette-edit-cancel" onClick={onClose}>Cancel</button>
+            <button className="palette-edit-cancel" onClick={maybeClose}>Cancel</button>
             <button className="create-btn" onClick={handleSave} disabled={!name.trim()}>Save</button>
           </div>
         </div>

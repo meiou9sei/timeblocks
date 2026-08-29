@@ -1,21 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db, auth, googleProvider } from './firebase.js'
 import TimeGrid from './components/TimeGrid.jsx'
 import BlockPalette from './components/BlockPalette.jsx'
 import SettingsModal from './components/SettingsModal.jsx'
-import ScheduleBuilderModal from './components/ScheduleBuilderModal.jsx'
 import Minimap from './components/Minimap.jsx'
 import ColorBreakdown from './components/ColorBreakdown.jsx'
 import PomodoroTimer from './components/PomodoroTimer.jsx'
-import ProcrastModal from './components/ProcrastModal.jsx'
 import DistractionsModal from './components/DistractionsModal.jsx'
 import TemplatesModal from './components/TemplatesModal.jsx'
 import PlacedBlockEditModal from './components/PlacedBlockEditModal.jsx'
 import HelpModal from './components/HelpModal.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import MobileBlockBar from './components/MobileBlockBar.jsx'
+import GoalTreeView from './components/GoalTreeView.jsx'
+import { makeTree, updateNodeText, setNodeDone, toggleNodeStar, insertNodeAbove, addChildNode, removeNode, collectStarred } from './utils/tree.js'
 import './styles/base.css'
 import './styles/layout.css'
 import './styles/grid.css'
@@ -26,10 +26,13 @@ import './styles/minimap.css'
 import './styles/pomodoro.css'
 import './styles/procrast.css'
 import './styles/templates.css'
+import './styles/tree.css'
 import './styles/mobile.css'
 
 
 const uid = () => Math.random().toString(36).slice(2)
+const ADHOC_COLOR = '#a78bfa'
+const ADHOC_DURATION = 2
 
 const DEFAULT_BLOCKS = [
   { id: 'b1', name: 'Deep Work',   color: '#00e5ff', duration: 4 },
@@ -52,6 +55,14 @@ function load(key, fallback) {
   }
 }
 
+function todayStr() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function defaultMvp() {
+  return { date: todayStr(), goals: [{ text: '', done: false }, { text: '', done: false }, { text: '', done: false }] }
+}
+
 export default function App() {
   const [blocks,   setBlocks]   = useState(() => load('tb-blocks',   DEFAULT_BLOCKS))
   const [ideal,    setIdeal]    = useState(() => load('tb-ideal',    []))
@@ -68,17 +79,21 @@ export default function App() {
   const [picking, setPicking] = useState(null) // { blockId, duration, movingPlacedId?, movingTrack? } — used in no-drag mode
   const [showSettings, setShowSettings] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
-  const [showScheduleBuilder, setShowScheduleBuilder] = useState(false)
-  const [showProcrast, setShowProcrast] = useState(false)
   const [showDistractions, setShowDistractions] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [editingPlaced, setEditingPlaced] = useState(null) // { placed, track }
-  const [procrastTasks, setProcrastTasks] = useState(() => load('tb-procrast', []))
   const [distractions,  setDistractions]  = useState(() => load('tb-distractions', []))
+  const [mvp, setMvp] = useState(() => {
+    const saved = load('tb-mvp', null)
+    return saved && saved.date === todayStr() ? saved : defaultMvp()
+  })
   const [templates, setTemplates] = useState(() => load('tb-templates', []))
+  const [trees, setTrees] = useState(() => load('tb-trees', []))
+  const [activeView, setActiveView] = useState(() => load('tb-active-view', 'schedule'))
   const [selection, setSelection] = useState(new Set())
   const [selectionTrack, setSelectionTrack] = useState(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const userMenuRef = useRef(null)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [user, setUser] = useState(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
@@ -204,8 +219,9 @@ export default function App() {
               if (d.actual)        setActual(d.actual)
               if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
               if (d.templates)     setTemplates(d.templates)
-              if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
+              if (d.trees)         setTrees(d.trees)
               if (d.distractions)  setDistractions(d.distractions)
+              if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
             }
             return
           }
@@ -219,8 +235,9 @@ export default function App() {
             if (d.actual)        setActual(d.actual)
             if (d.settings)      setSettings(prev => ({ ...d.settings, noDragMode: prev.noDragMode }))
             if (d.templates)     setTemplates(d.templates)
-            if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
+            if (d.trees)         setTrees(d.trees)
             if (d.distractions)  setDistractions(d.distractions)
+            if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
           }
         })
       } else {
@@ -242,9 +259,9 @@ export default function App() {
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
       const { noDragMode: _local, ...syncedSettings } = settings
-      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, procrastTasks, distractions })
+      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, trees, distractions, mvp })
     }, 800)
-  }, [blocks, ideal, actual, settings, templates, procrastTasks, distractions, user])
+  }, [blocks, ideal, actual, settings, templates, trees, distractions, mvp, user])
 
   // Hard-delete soft-deleted blocks that no longer have any placements
   useEffect(() => {
@@ -268,9 +285,11 @@ export default function App() {
   useEffect(() => { localStorage.setItem('tb-ideal',    JSON.stringify(ideal))    }, [ideal])
   useEffect(() => { localStorage.setItem('tb-actual',   JSON.stringify(actual))   }, [actual])
   useEffect(() => { localStorage.setItem('tb-settings', JSON.stringify(settings)) }, [settings])
-  useEffect(() => { localStorage.setItem('tb-procrast',       JSON.stringify(procrastTasks)) }, [procrastTasks])
   useEffect(() => { localStorage.setItem('tb-distractions',   JSON.stringify(distractions))  }, [distractions])
+  useEffect(() => { localStorage.setItem('tb-mvp',            JSON.stringify(mvp))            }, [mvp])
   useEffect(() => { localStorage.setItem('tb-templates',  JSON.stringify(templates))     }, [templates])
+  useEffect(() => { localStorage.setItem('tb-trees',          JSON.stringify(trees))          }, [trees])
+  useEffect(() => { localStorage.setItem('tb-active-view',    JSON.stringify(activeView))     }, [activeView])
   useEffect(() => { document.documentElement.setAttribute('data-theme', settings.theme ?? 'dark') }, [settings.theme])
   useEffect(() => { document.documentElement.setAttribute('data-density', settings.density ?? 'normal') }, [settings.density])
 
@@ -280,14 +299,23 @@ export default function App() {
       if (editingPlaced)      { setEditingPlaced(null);          return }
       if (showHelp)           { setShowHelp(false);              return }
       if (showTemplates)      { setShowTemplates(false);         return }
-      if (showProcrast)       { setShowProcrast(false);          return }
       if (showDistractions)   { setShowDistractions(false);      return }
-      if (showScheduleBuilder){ setShowScheduleBuilder(false);   return }
       if (showSettings)       { setShowSettings(false);          return }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [editingPlaced, showHelp, showTemplates, showProcrast, showScheduleBuilder, showSettings])
+  }, [editingPlaced, showHelp, showTemplates, showDistractions, showSettings])
+
+  useEffect(() => {
+    if (!showUserMenu) return
+    function handleClickOutside(e) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showUserMenu])
 
   const getBlock = useCallback((blockId) => blocks.find(b => b.id === blockId), [blocks])
 
@@ -306,14 +334,22 @@ export default function App() {
 
   const handlePick = useCallback((p) => setPicking(p), [])
 
+  const handleAdhocDragStart = useCallback((taskText) => {
+    setDragInfo({ source: 'adhoc', taskText, placedDuration: ADHOC_DURATION })
+  }, [])
+
+  const handleAdhocPick = useCallback((taskText) => {
+    setPicking(prev => prev?.adhocText === taskText ? null : { adhocText: taskText, duration: ADHOC_DURATION })
+  }, [])
+
   const handleClickSlot = useCallback((slot, track) => {
     if (!picking) return
-    const { blockId, duration, movingPlacedId, movingTrack, procrastTaskId, taskText } = picking
+    const { blockId, duration, movingPlacedId, movingTrack, adhocText } = picking
     const startSlot = Math.min(Math.max(0, slot), 48 - duration)
-    if (procrastTaskId) {
+    if (adhocText) {
       if (isOccupied(startSlot, duration, track, null)) return
       const newBlockId = uid()
-      setBlocks(prev => [...prev, { id: newBlockId, name: taskText, color: '#c87d2f', duration, procrast: true }])
+      setBlocks(prev => [...prev, { id: newBlockId, name: adhocText, color: ADHOC_COLOR, duration }])
       const setTarget = track === 'ideal' ? setIdeal : setActual
       setTarget(prev => [...prev, { id: uid(), blockId: newBlockId, startSlot, duration }])
       setPicking(null)
@@ -369,17 +405,14 @@ export default function App() {
 
     // ── Single-block drop ─────────────────────────────────────────────────
 
-    // Procrast drops carry everything they need in dragInfo — handle before getBlock
-    if (dragInfo.source === 'procrast') {
-      const duration  = dragInfo.placedDuration ?? 2
+    // Adhoc drops (MVP / starred goal cards) carry their own text — handle before getBlock
+    if (dragInfo.source === 'adhoc') {
+      const duration  = dragInfo.placedDuration ?? ADHOC_DURATION
       const startSlot = Math.max(0, slot)
       if (startSlot + duration > 48) return
       if (isOccupied(startSlot, duration, track, null)) return
       const newBlockId = uid()
-      setBlocks(prev => [
-        ...prev.filter(b => b.id !== '_procrast_temp'),
-    { id: newBlockId, name: dragInfo.taskText, color: '#c87d2f', duration, procrast: true },
-      ])
+      setBlocks(prev => [...prev, { id: newBlockId, name: dragInfo.taskText, color: ADHOC_COLOR, duration }])
       const setTarget = track === 'ideal' ? setIdeal : setActual
       setTarget(prev => [...prev, { id: uid(), blockId: newBlockId, startSlot, duration }])
       setDragInfo(null)
@@ -488,42 +521,8 @@ export default function App() {
     })
   }, [])
 
-  const handleApplySchedule = useCallback((placedBlocks, track, replaceExisting, newBlocks = []) => {
-    if (newBlocks.length > 0) {
-      setBlocks(prev => [...prev, ...newBlocks])
-    }
-    const setter = track === 'ideal' ? setIdeal : setActual
-    setter(prev => {
-      const base = replaceExisting ? [] : prev
-      return [...base, ...placedBlocks.map(p => ({ id: uid(), ...p }))]
-    })
-  }, [])
-
   const handleDragEnd = useCallback(() => {
     setDragInfo(null)
-  }, [])
-
-  const PROCRAST_DURATION = 2
-
-  const handleProcrastDragStart = useCallback((task) => {
-    setDragInfo({ source: 'procrast', taskText: task.text, placedDuration: PROCRAST_DURATION })
-  }, [])
-
-  const handleProcrastAdd    = useCallback((text) => {
-    setProcrastTasks(prev => [...prev, { id: uid(), text, done: false }])
-  }, [])
-  const handleProcrastToggle = useCallback((id) => {
-    setProcrastTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
-  }, [])
-  const handleProcrastDelete = useCallback((id) => {
-    setProcrastTasks(prev => prev.filter(t => t.id !== id))
-  }, [])
-  const handleProcrastClearDone = useCallback(() => {
-    setProcrastTasks(prev => prev.filter(t => !t.done))
-  }, [])
-
-  const handleProcrastReorder = useCallback((reordered) => {
-    setProcrastTasks(reordered)
   }, [])
 
   const handleDistractionAdd       = useCallback((text) => {
@@ -535,6 +534,13 @@ export default function App() {
   const handleDistractionDelete    = useCallback((id) => {
     setDistractions(prev => prev.filter(t => t.id !== id))
   }, [])
+
+  const handleMvpTextChange = useCallback((idx, text) => {
+    setMvp(prev => ({ ...prev, goals: prev.goals.map((g, i) => i === idx ? { ...g, text } : g) }))
+  }, [])
+  const handleMvpToggle = useCallback((idx) => {
+    setMvp(prev => ({ ...prev, goals: prev.goals.map((g, i) => i === idx ? { ...g, done: !g.done } : g) }))
+  }, [])
   const handleDistractionClearDone = useCallback(() => {
     setDistractions(prev => prev.filter(t => !t.done))
   }, [])
@@ -543,22 +549,6 @@ export default function App() {
   }, [])
   const handleDistractionEdit      = useCallback((id, text) => {
     setDistractions(prev => prev.map(t => t.id === id ? { ...t, text } : t))
-  }, [])
-
-  const handleProcrastEdit = useCallback((id, text) => {
-    setProcrastTasks(prev => prev.map(t => t.id === id ? { ...t, text } : t))
-  }, [])
-
-  const handleProcrastImport = useCallback((imported) => {
-    setProcrastTasks(prev => {
-      const existingIds = new Set(prev.map(t => t.id))
-      const fresh = imported.map(t => ({
-        id: existingIds.has(t.id) ? uid() : t.id,
-        text: String(t.text ?? '').trim(),
-        done: Boolean(t.done),
-      })).filter(t => t.text)
-      return [...prev, ...fresh]
-    })
   }, [])
 
   const handleSaveTemplate = useCallback((name, savedTrack) => {
@@ -598,13 +588,62 @@ export default function App() {
     setTemplates(prev => prev.map(t => t.id === id ? { ...t, name } : t))
   }, [])
 
+  const handleTreeCreate = useCallback(() => {
+    setTrees(prev => [...prev, makeTree()])
+    setActiveView('tree')
+  }, [])
+
+  const handleTreeDelete = useCallback((treeId) => {
+    const tree = trees.find(t => t.id === treeId)
+    if (tree && !window.confirm(`Delete "${tree.root.text.trim() || 'Untitled Goal'}" and all its subgoals?`)) return
+    setTrees(prev => prev.filter(t => t.id !== treeId))
+  }, [trees])
+
+  const handleTreeNodeTextChange = useCallback((treeId, nodeId, text) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: updateNodeText(t.root, nodeId, text) } : t))
+  }, [])
+
+  const handleTreeNodeAddChild = useCallback((treeId, parentId, newId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: addChildNode(t.root, parentId, newId) } : t))
+  }, [])
+
+  const handleTreeNodeInsertAbove = useCallback((treeId, targetId, newId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: insertNodeAbove(t.root, targetId, newId) } : t))
+  }, [])
+
+  const handleTreeNodeDelete = useCallback((treeId, nodeId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: removeNode(t.root, nodeId) } : t))
+  }, [])
+
+  const handleTreeNodeToggleDone = useCallback((treeId, nodeId, done) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: setNodeDone(t.root, nodeId, done, done ? todayStr() : null) } : t))
+  }, [])
+
+  const handleTreeNodeDateChange = useCallback((treeId, nodeId, date) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: setNodeDone(t.root, nodeId, true, date) } : t))
+  }, [])
+
+  const handleTreeNodeToggleStar = useCallback((treeId, nodeId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, root: toggleNodeStar(t.root, nodeId) } : t))
+  }, [])
+
+  const handleTreeArchiveToggle = useCallback((treeId) => {
+    setTrees(prev => prev.map(t => t.id === treeId ? { ...t, archived: !t.archived } : t))
+  }, [])
+
+  const starredGoals = useMemo(() => {
+    return trees
+      .filter(t => !t.archived)
+      .flatMap(t => collectStarred(t.root, t.root.text.trim() || 'Untitled Goal'))
+  }, [trees])
+
   const handleResetData = useCallback(() => {
     setBlocks(DEFAULT_BLOCKS)
     setIdeal([])
     setActual([])
     setSettings(DEFAULT_SETTINGS)
     setTemplates([])
-    setProcrastTasks([])
+    setTrees([])
     localStorage.removeItem('tb-help-hint-dismissed')
     localStorage.removeItem('tb-mobile-hint-dismissed')
     localStorage.removeItem('tb-picking-tip-dismissed')
@@ -621,7 +660,7 @@ export default function App() {
       actual,
       settings,
       templates,
-      procrastTasks,
+      trees,
     }, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url  = URL.createObjectURL(blob)
@@ -630,7 +669,7 @@ export default function App() {
     a.download = `timeblocks-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
-  }, [blocks, ideal, actual, settings, templates, procrastTasks])
+  }, [blocks, ideal, actual, settings, templates, trees])
 
   const handleImportData = useCallback((file) => {
     const reader = new FileReader()
@@ -642,7 +681,7 @@ export default function App() {
         if (d.actual)       setActual(d.actual)
         if (d.settings)     setSettings(d.settings)
         if (d.templates)    setTemplates(d.templates)
-        if (d.procrastTasks) setProcrastTasks(d.procrastTasks)
+        if (d.trees)        setTrees(d.trees)
       } catch { /* ignore bad files */ }
     }
     reader.readAsText(file)
@@ -668,7 +707,7 @@ export default function App() {
         document.body.classList.remove('pomo-ringing')
       } else if (pomoState.phase === 'ringing') {
         document.body.style.setProperty('--pomo-fill-tint', accentRgba(0.2))
-        document.body.style.setProperty('--pomo-fill-pct', '100%')
+        document.body.style.setProperty('--pomo-fill-pct', '0%')
         document.body.classList.add('pomo-ringing')
       } else {
         document.body.style.removeProperty('--pomo-fill-tint')
@@ -683,12 +722,12 @@ export default function App() {
   }, [settings.pomodoroPageFill, settings.theme, pomoState])
 
   return (
-    <div className="app">
+    <div className={`app${activeView === 'tree' ? ' app--tree-view' : ''}`}>
       <div className="app-header-wrap">
       <header className="app-header">
         <div className="app-title-block">
           <h1 className="app-title">TIMEBLOCKS</h1>
-          <p className="app-subtitle">drag · drop · build your day</p>
+          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : 'drag · drop · build your day'}</p>
         </div>
         <div className="app-header-actions">
           <div className="help-hint-wrap">
@@ -712,18 +751,6 @@ export default function App() {
               <line x1="6.5" y1="13" x2="10.5" y2="13" />
             </svg>
           </button>
-          <button className="schedule-btn" onClick={() => setShowScheduleBuilder(true)} title="Schedule Builder">
-            ▦
-          </button>
-          <button className="procrast-btn" onClick={() => setShowProcrast(true)} title="Procrastination Happy Hour">
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <circle cx="4.5"  cy="7"   r="2.2" />
-              <circle cx="8.5"  cy="5.5" r="2.8" />
-              <circle cx="12.5" cy="7"   r="2.2" />
-              <path d="M3 7h11v11a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 3 18V7z" />
-              <path d="M14 9.5h1.5a2 2 0 0 1 0 4H14v-1.5h1.5a.5.5 0 0 0 0-1H14V9.5z" />
-            </svg>
-          </button>
           <button className="distractions-nav-btn" onClick={() => setShowDistractions(true)} title="Brain Dump">
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ display: 'block' }}>
               <path d="M10 2a7 7 0 1 0 4.95 11.95l2.83 2.83a1 1 0 0 0 1.41-1.41l-2.83-2.83A7 7 0 0 0 10 2zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 10 4z"/>
@@ -735,6 +762,7 @@ export default function App() {
           <button className="settings-btn" onClick={() => setShowSettings(true)} title="Settings">
             ⚙
           </button>
+          <div ref={userMenuRef} style={{ position: 'relative' }}>
           <button className="auth-avatar-btn" onClick={() => setShowUserMenu(m => !m)} title={user ? `Signed in as ${user.email}` : 'Account'}>
             {user?.photoURL
               ? <img src={user.photoURL} alt="" className="auth-avatar-img" referrerPolicy="no-referrer" />
@@ -744,7 +772,7 @@ export default function App() {
             }
           </button>
           {showUserMenu && (
-            <div className="user-menu" onMouseLeave={() => setShowUserMenu(false)}>
+            <div className="user-menu">
               {user ? (
                 <>
                   <div className="user-menu-greeting">Hi, {user.displayName?.split(' ')[0] || user.email}!</div>
@@ -769,8 +797,17 @@ export default function App() {
               )}
             </div>
           )}
+          </div>
         </div>
         <div className="hamburger-hint-wrap">
+          <button className="mobile-profile-btn" onClick={() => setShowAuthModal(true)} title={user ? (user.displayName || user.email) : 'Account'}>
+            {user?.photoURL
+              ? <img src={user.photoURL} alt="" className="auth-avatar-img" referrerPolicy="no-referrer" />
+              : user
+                ? <span className="auth-avatar-initial">{(user.displayName || user.email || '?')[0].toUpperCase()}</span>
+                : <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M10 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0H3z"/></svg>
+            }
+          </button>
           <button className={`hamburger-btn${showHelpHint && !showMobileMenu ? ' help-btn--glow' : ''}`} onClick={() => setShowMobileMenu(m => !m)} aria-label="Menu">
             {showMobileMenu ? '✕' : '☰'}
           </button>
@@ -798,42 +835,38 @@ export default function App() {
             </svg>
             Templates
           </button>
-          <button className="mobile-menu-item" onClick={() => { setShowScheduleBuilder(true); setShowMobileMenu(false) }}>
-            <span className="mobile-menu-icon">▦</span> Builder
-          </button>
-          <button className="mobile-menu-item" onClick={() => { setShowProcrast(true); setShowMobileMenu(false) }}>
-            <svg className="mobile-menu-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <circle cx="4.5"  cy="7"   r="2.2" />
-              <circle cx="8.5"  cy="5.5" r="2.8" />
-              <circle cx="12.5" cy="7"   r="2.2" />
-              <path d="M3 7h11v11a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 3 18V7z" />
-              <path d="M14 9.5h1.5a2 2 0 0 1 0 4H14v-1.5h1.5a.5.5 0 0 0 0-1H14V9.5z" />
-            </svg>
-            Happy Hour
-          </button>
           <button className="mobile-menu-item" onClick={() => { setShowSettings(true); setShowMobileMenu(false) }}>
             <svg className="mobile-menu-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"/>
             </svg>
             Settings
           </button>
-          <button className="mobile-menu-item" onClick={() => { setShowAuthModal(true); setShowMobileMenu(false) }}>
-            <span className="mobile-menu-icon">
-              {user?.photoURL
-                ? <img src={user.photoURL} alt="" className="auth-avatar-img" referrerPolicy="no-referrer" />
-                : user
-                  ? <span className="auth-avatar-initial">{(user.displayName || user.email || '?')[0].toUpperCase()}</span>
-                  : <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M10 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-7 8a7 7 0 0 1 14 0H3z"/></svg>
-              }
-            </span>
-            {user ? (user.displayName?.split(' ')[0] || user.email) : 'Sign in'}
+          <button className="mobile-menu-item" onClick={() => { setShowDistractions(true); setShowMobileMenu(false) }}>
+            <svg className="mobile-menu-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path d="M10 2a7 7 0 1 0 4.95 11.95l2.83 2.83a1 1 0 0 0 1.41-1.41l-2.83-2.83A7 7 0 0 0 10 2zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 10 4z"/>
+              <circle cx="7.5" cy="9" r="1"/>
+              <circle cx="10" cy="9" r="1"/>
+              <circle cx="12.5" cy="9" r="1"/>
+            </svg>
+            Brain Dump
           </button>
         </div>
         </>
       )}
       </div>{/* end app-header-wrap */}
 
-      {showMobileHint && settings.noDragMode && (
+      <div className="main-tabs">
+        <button
+          className={`main-tab${activeView === 'schedule' ? ' main-tab--active' : ''}`}
+          onClick={() => setActiveView('schedule')}
+        >SCHEDULE</button>
+        <button
+          className={`main-tab${activeView === 'tree' ? ' main-tab--active' : ''}`}
+          onClick={() => setActiveView('tree')}
+        >THE TREE</button>
+      </div>
+
+      {activeView === 'schedule' && showMobileHint && settings.noDragMode && (
         <div className="mobile-hint-banner">
           <span><strong>Click-to-place mode:</strong> tap a block below, then tap a slot to place it. Change in Settings → Interaction.</span>
           <button className="mobile-hint-settings" onClick={() => { setShowSettings(true); dismissMobileHint() }}>Settings</button>
@@ -841,13 +874,28 @@ export default function App() {
         </div>
       )}
 
-      {picking && showPickingTip && (
+      {activeView === 'schedule' && picking && showPickingTip && (
         <div className="picking-banner">
-          <span>Tap a slot to place <strong>{picking.procrastTaskId ? picking.taskText : getBlock(picking.blockId)?.name}</strong> · {picking.procrastTaskId ? 'Tap ✕ to cancel' : 'Tap it again to edit'} · tap anywhere else to cancel</span>
+          <span>Tap a slot to place <strong>{picking.adhocText ?? getBlock(picking.blockId)?.name}</strong> · {picking.adhocText ? 'Tap the item again to cancel' : 'Tap it again to edit'} · tap anywhere else to cancel</span>
           <button className="picking-cancel" onClick={dismissPickingTip}>Got it</button>
         </div>
       )}
 
+      {activeView === 'tree' ? (
+        <GoalTreeView
+          trees={trees}
+          onCreateTree={handleTreeCreate}
+          onDeleteTree={handleTreeDelete}
+          onNodeTextChange={handleTreeNodeTextChange}
+          onNodeAddChild={handleTreeNodeAddChild}
+          onNodeInsertAbove={handleTreeNodeInsertAbove}
+          onNodeDelete={handleTreeNodeDelete}
+          onNodeToggleDone={handleTreeNodeToggleDone}
+          onNodeDateChange={handleTreeNodeDateChange}
+          onNodeToggleStar={handleTreeNodeToggleStar}
+          onToggleArchive={handleTreeArchiveToggle}
+        />
+      ) : (
       <div className="app-body">
         <div className={`left-sidebar${settings.showMinimap === false && settings.showPomodoro === false ? ' left-sidebar--hidden' : ''}`}>
           {settings.showMinimap !== false && (
@@ -898,26 +946,32 @@ export default function App() {
           onEditBlock={handleEditBlock}
           onRemoveBlock={handleRemoveBlock}
           onReorderBlocks={handleReorderBlocks}
-          procrastTasks={procrastTasks}
-          onProcrastDragStart={handleProcrastDragStart}
           noDragMode={settings.noDragMode}
           picking={picking}
           onPick={handlePick}
           onAddDistraction={handleDistractionAdd}
           onOpenDistractions={() => setShowDistractions(true)}
+          mvp={mvp}
+          onMvpTextChange={handleMvpTextChange}
+          onMvpToggle={handleMvpToggle}
+          starredGoals={starredGoals}
+          onAdhocDragStart={handleAdhocDragStart}
+          onAdhocPick={handleAdhocPick}
         />
       </div>
+      )}
 
-      <MobileBlockBar
-        blocks={blocks}
-        procrastTasks={procrastTasks}
-        onAddBlock={handleAddBlock}
-        noDragMode={settings.noDragMode}
-        picking={picking}
-        onPick={handlePick}
-        onEditBlock={handleEditBlock}
-        onRemoveBlock={handleRemoveBlock}
-      />
+      {activeView === 'schedule' && (
+        <MobileBlockBar
+          blocks={blocks}
+          onAddBlock={handleAddBlock}
+          noDragMode={settings.noDragMode}
+          picking={picking}
+          onPick={handlePick}
+          onEditBlock={handleEditBlock}
+          onRemoveBlock={handleRemoveBlock}
+        />
+      )}
 
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
@@ -936,30 +990,6 @@ export default function App() {
           onImport={handleImportData}
           onReset={handleResetData}
           onClose={() => setShowSettings(false)}
-        />
-      )}
-
-      {showScheduleBuilder && (
-        <ScheduleBuilderModal
-          blocks={blocks}
-          ideal={ideal}
-          actual={actual}
-          onApply={handleApplySchedule}
-          onClose={() => setShowScheduleBuilder(false)}
-        />
-      )}
-
-      {showProcrast && (
-        <ProcrastModal
-          tasks={procrastTasks}
-          onAdd={handleProcrastAdd}
-          onToggle={handleProcrastToggle}
-          onDelete={handleProcrastDelete}
-          onClearDone={handleProcrastClearDone}
-          onReorder={handleProcrastReorder}
-          onEdit={handleProcrastEdit}
-          onImport={handleProcrastImport}
-          onClose={() => setShowProcrast(false)}
         />
       )}
 

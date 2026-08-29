@@ -60,23 +60,39 @@
 }
 .settings-btn:hover { color: var(--accent); }
 
-.schedule-btn {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 1.4rem;
-  line-height: 1;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius);
-  cursor: pointer;
+/* ── Main tab switcher ───────────────────────── */
+
+.main-tabs {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.15s;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--grid-hour);
   flex-shrink: 0;
 }
-.schedule-btn:hover { color: var(--accent); }
+
+.main-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: 0.5rem 0.9rem;
+  font-family: var(--font);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.main-tab:hover { color: var(--text-dim); }
+.main-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.app--tree-view {
+  max-width: 1400px;
+}
 
 .app-body {
   display: flex;

@@ -48,11 +48,12 @@
 /* ── Block text content ─────────────────────── */
 
 .placed-block-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-weight: 700;
   font-size: 0.75rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   line-height: 1.2;
 }
 .placed-block-time {
@@ -153,26 +154,6 @@
   letter-spacing: -1px;
 }
 
-/* ── Procrastination beer icon ───────────────── */
-
-.placed-block-procrast-icon {
-  position: absolute;
-  bottom: 9px;
-  right: 5px;
-  width: 13px;
-  height: 13px;
-  opacity: 0.2;
-  pointer-events: none;
-  z-index: 1;
-}
-
-[data-density="compact"] .placed-block-procrast-icon {
-  width: 10px;
-  height: 10px;
-  bottom: 4px;
-  right: 4px;
-}
-
 /* ── Selected state ─────────────────────────── */
 
 .placed-block--selected {
@@ -211,9 +192,7 @@
 
 [data-density="compact"] .placed-block-name {
   font-size: 0.65rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
   line-height: 1.25;
 }
 

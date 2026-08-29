@@ -111,7 +111,7 @@ function TrackColumn({
         const blockHeight = p.duration * rowH - 2
         const lineH   = rowH <= 20 ? 11 : 13   // px per desc line
         const overhead = rowH <= 20 ? 18 : 26   // name + time + padding
-        const descLines = Math.max(1, Math.floor((blockHeight - overhead) / lineH))
+        const descLines = Math.max(1, Math.floor((blockHeight - overhead) / lineH) - 1)
 
         function handleClick(e) {
           e.stopPropagation()
@@ -153,15 +153,6 @@ function TrackColumn({
               <span className="placed-block-time">
                 {formatTimeRange(p.startSlot, p.duration, fmt)}
               </span>
-            )}
-            {block.procrast && (
-              <svg className="placed-block-procrast-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <circle cx="4.5"  cy="7"   r="2.2" />
-                <circle cx="8.5"  cy="5.5" r="2.8" />
-                <circle cx="12.5" cy="7"   r="2.2" />
-                <path d="M3 7h11v11a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 3 18V7z" />
-                <path d="M14 9.5h1.5a2 2 0 0 1 0 4H14v-1.5h1.5a.5.5 0 0 0 0-1H14V9.5z" />
-              </svg>
             )}
             <div className="placed-block-buttons">
               {noDragMode && <button

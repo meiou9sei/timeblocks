@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import PlacedBlockEditModal from './PlacedBlockEditModal.jsx'
 
 const QUOTES = [
@@ -53,33 +53,22 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, procrastTasks = [], onProcrastDragStart, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions }) {
+export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions, mvp, onMvpTextChange, onMvpToggle, starredGoals = [], onAdhocDragStart, onAdhocPick }) {
   const [name,        setName]        = useState('')
   const [color,       setColor]       = useState(TETRIS_COLORS[0])
   const [duration,    setDuration]    = useState(2)
   const [customColor, setCustomColor] = useState('#00e5ff')
   const [editingBlock, setEditingBlock] = useState(null)
-  const [suggestionIds, setSuggestionIds] = useState([])
   const [dragOverId,  setDragOverId]  = useState(null)
   const [distraction, setDistraction] = useState('')
   const [distrAdded,  setDistrAdded]  = useState(false)
-  const [paletteTab,  setPaletteTab]  = useState('someday') // 'someday' | 'distractions'
+  const [paletteTab,  setPaletteTab]  = useState('distractions') // 'mvp' | 'distractions' | 'goals'
   const reorderingId = useRef(null)
   const quote = useRef(QUOTES[Math.floor(Math.random() * QUOTES.length)]).current
 
-  useEffect(() => {
-    if (procrastTasks.length > 0 && suggestionIds.length === 0) refreshSuggestions()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  function refreshSuggestions() {
-    const pending = procrastTasks.filter(t => !t.done)
-    const shuffled = [...pending].sort(() => Math.random() - 0.5)
-    setSuggestionIds(shuffled.slice(0, 3).map(t => t.id))
+  function handleAdhocClick(taskText) {
+    if (noDragMode) onAdhocPick(taskText)
   }
-
-  const suggestions = suggestionIds
-    .map(id => procrastTasks.find(t => t.id === id && !t.done))
-    .filter(Boolean)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -105,7 +94,7 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
         {blocks.length === 0 && (
           <p className="palette-empty">No blocks yet. Create one below.</p>
         )}
-        {blocks.filter(b => !b.procrast && !b.deleted && !b.paletteHidden).map(block => {
+        {blocks.filter(b => !b.deleted && !b.paletteHidden).map(block => {
           const light = isLight(block.color)
           return (
             <div
@@ -203,42 +192,74 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
         <div className="palette-procrast">
           <div className="palette-tabs">
             <button
-              className={`palette-tab${paletteTab === 'someday' ? ' palette-tab--active' : ''}`}
-              onClick={() => setPaletteTab('someday')}
-            >SOMEDAY MAYBE</button>
+              className={`palette-tab${paletteTab === 'mvp' ? ' palette-tab--active' : ''}`}
+              onClick={() => setPaletteTab('mvp')}
+            >TODAY'S MVP</button>
             <button
               className={`palette-tab${paletteTab === 'distractions' ? ' palette-tab--active' : ''}`}
               onClick={() => setPaletteTab('distractions')}
             >DISTRACTIONS</button>
-            {paletteTab === 'someday' && (
-              <button
-                className="procrast-refresh-btn"
-                onClick={refreshSuggestions}
-                title="Shuffle suggestions"
-              >↻</button>
-            )}
+            <button
+              className={`palette-tab${paletteTab === 'goals' ? ' palette-tab--active' : ''}`}
+              onClick={() => setPaletteTab('goals')}
+            >GOALS</button>
           </div>
 
-          {paletteTab === 'someday' && (
-            <>
-              {procrastTasks.filter(t => !t.done).length === 0 ? (
-                <p className="palette-procrast-none">No pending tasks in Happy Hour.</p>
-              ) : suggestions.length === 0 ? (
-                <p className="palette-procrast-none">Hit ↻ to load suggestions</p>
+          {paletteTab === 'mvp' && (
+            <div className="palette-mvp">
+              <p className="palette-mvp-sub">3 things you must get done today, no matter what.</p>
+              {mvp.goals.map((goal, i) => (
+                <label key={i} className={`mvp-goal${goal.done ? ' mvp-goal--done' : ''}`}>
+                  <input
+                    type="checkbox"
+                    className="mvp-goal-check"
+                    checked={goal.done}
+                    onChange={() => onMvpToggle(i)}
+                  />
+                  <input
+                    type="text"
+                    className="mvp-goal-input"
+                    placeholder={`Goal ${i + 1}...`}
+                    value={goal.text}
+                    onChange={(e) => onMvpTextChange(i, e.target.value)}
+                    maxLength={80}
+                  />
+                  {goal.text.trim() && (
+                    <button
+                      type="button"
+                      className={`mvp-goal-drag${noDragMode && picking?.adhocText === goal.text ? ' mvp-goal-drag--picking' : ''}`}
+                      draggable={!noDragMode}
+                      onDragStart={(e) => { e.stopPropagation(); onAdhocDragStart(goal.text) }}
+                      onDragEnd={onDragEnd}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdhocClick(goal.text) }}
+                      title="Drag onto the schedule"
+                    >⠿</button>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+
+          {paletteTab === 'goals' && (
+            <div className="palette-goals">
+              {starredGoals.length === 0 ? (
+                <p className="palette-goals-none">No starred subgoals yet. Star one in The Tree tab to see it here.</p>
               ) : (
-                suggestions.map(task => (
+                starredGoals.map(g => (
                   <div
-                    key={task.id}
-                    className="procrast-suggestion"
-                    draggable
-                    onDragStart={() => onProcrastDragStart(task)}
+                    key={g.id}
+                    className={`palette-goal-item${noDragMode && picking?.adhocText === g.text ? ' palette-goal-item--picking' : ''}`}
+                    draggable={!noDragMode}
+                    onDragStart={() => onAdhocDragStart(g.text)}
                     onDragEnd={onDragEnd}
+                    onClick={() => handleAdhocClick(g.text)}
                   >
-                    <span className="procrast-suggestion-text">{task.text}</span>
+                    <span className="palette-goal-text">{g.text}</span>
+                    <span className="palette-goal-tree">{g.treeName}</span>
                   </div>
                 ))
               )}
-            </>
+            </div>
           )}
 
           {paletteTab === 'distractions' && (
@@ -250,7 +271,7 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                     placeholder="What's on your mind..."
                     value={distraction}
                     onChange={(e) => setDistraction(e.target.value)}
-                    maxLength={120}
+                    maxLength={2000}
                   />
                   <button type="submit" className="distraction-add-btn" disabled={!distraction.trim()}>
                     {distrAdded ? '✓' : '+'}

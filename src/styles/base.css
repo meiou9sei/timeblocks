@@ -356,7 +356,6 @@
 }
 
 /* Modal dialogs: different speed so they feel independently drunk */
-[data-theme="drunk"] .sb-modal,
 [data-theme="drunk"] .settings-modal,
 [data-theme="drunk"] .help-modal,
 [data-theme="drunk"] .auth-modal {
@@ -376,7 +375,7 @@
 [data-theme="drunk"] .procrast-subtitle { animation: drunk-wave-b 5s ease-in-out infinite; }
 [data-theme="drunk"] .app-subtitle      { animation: drunk-wave-a 4.5s ease-in-out infinite; }
 
-/* Procrastination list items: staggered wave */
+/* Brain Dump list items: staggered wave */
 [data-theme="drunk"] .procrast-item:nth-child(4n+1) { animation: drunk-wave-a 3s ease-in-out infinite; }
 [data-theme="drunk"] .procrast-item:nth-child(4n+2) { animation: drunk-wave-b 3s ease-in-out infinite; animation-delay: -0.75s; }
 [data-theme="drunk"] .procrast-item:nth-child(4n+3) { animation: drunk-wave-a 3s ease-in-out infinite; animation-delay: -1.5s; }
@@ -385,14 +384,6 @@
 /* Template cards: alternate wave */
 [data-theme="drunk"] .tmpl-card:nth-child(odd)  { animation: drunk-wave-a 4s ease-in-out infinite; }
 [data-theme="drunk"] .tmpl-card:nth-child(even) { animation: drunk-wave-b 4s ease-in-out infinite; animation-delay: -2s; }
-
-/* Schedule builder block rows: wave */
-[data-theme="drunk"] .sb-block-row:nth-child(odd)  { animation: drunk-wave-a 2.8s ease-in-out infinite; }
-[data-theme="drunk"] .sb-block-row:nth-child(even) { animation: drunk-wave-b 2.8s ease-in-out infinite; animation-delay: -1.4s; }
-
-/* Intake task rows: wave */
-[data-theme="drunk"] .sb-intake-row:nth-child(odd)  { animation: drunk-wave-a 2.8s ease-in-out infinite; animation-delay: -0.5s; }
-[data-theme="drunk"] .sb-intake-row:nth-child(even) { animation: drunk-wave-b 2.8s ease-in-out infinite; }
 
 /* Theme tiles in settings: wave */
 [data-theme="drunk"] .theme-tile:nth-child(odd)  { animation: drunk-wave-a 3.5s ease-in-out infinite; }
@@ -429,8 +420,8 @@ html { font-size: 15.5px; }
 }
 
 @keyframes pomo-ring-flash {
-  0%, 100% { --pomo-fill-pct: 100%; }
-  50%       { --pomo-fill-pct: 82%; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 body {
@@ -445,6 +436,16 @@ body {
 }
 
 body.pomo-ringing {
-  animation: pomo-ring-flash 1s ease-in-out infinite;
+  animation: none;
   transition: none;
+}
+
+body.pomo-ringing::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  background: var(--pomo-fill-tint, rgba(0, 229, 255, 0.2));
+  animation: pomo-ring-flash 0.9s ease-in-out infinite;
 }
