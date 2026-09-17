@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function formatDuration(slots) {
   const h = Math.floor(slots / 2)
@@ -35,6 +35,8 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
   const [description, setDescription] = useState(block.description ?? '')
   const [duration,    setDuration]    = useState(placedDuration ?? block.duration ?? 2)
   const [hitMax,      setHitMax]      = useState(false)
+  const [keepColor,   setKeepColor]   = useState(!!block.keepColor)
+  const mouseDownOnBackdrop = useRef(false)
 
   const maxSlots = maxDuration ?? 48
 
@@ -51,7 +53,8 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
     name.trim() !== block.name ||
     color        !== block.color ||
     description  !== (block.description ?? '') ||
-    duration     !== (placedDuration ?? block.duration ?? 2)
+    duration     !== (placedDuration ?? block.duration ?? 2) ||
+    keepColor    !== !!block.keepColor
 
   function maybeClose() {
     if (!isDirty || window.confirm('Discard unsaved changes?')) onClose()
@@ -68,7 +71,7 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
 
   function handleSave() {
     if (!name.trim()) return
-    onSave(block.id, { name: name.trim(), color, description, duration })
+    onSave(block.id, { name: name.trim(), color, description, duration, keepColor })
     onClose()
   }
 
@@ -80,7 +83,11 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
   const light = isLight(color)
 
   return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && maybeClose()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={e => { mouseDownOnBackdrop.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdrop.current) maybeClose() }}
+    >
       <div className="pbe-modal">
         <div className="pbe-header">
           <span className="pbe-title">Edit Block</span>
@@ -132,6 +139,15 @@ export default function PlacedBlockEditModal({ block, placedId, track, placedDur
         >
           {name || 'Preview'}
         </div>
+
+        <label className="pbe-keep-color">
+          <input
+            type="checkbox"
+            checked={keepColor}
+            onChange={e => setKeepColor(e.target.checked)}
+          />
+          Keep color in Spotlight Mode
+        </label>
 
         {(placedId === null || placedDuration != null) && (<>
           <div className="duration-stepper">

@@ -69,6 +69,12 @@
   flex-shrink: 0;
 }
 
+.focus-distraction-row {
+  width: 100%;
+  max-width: 640px;
+  flex-shrink: 0;
+}
+
 .focus-message {
   width: 100%;
   max-width: 640px;

@@ -9,7 +9,7 @@ import Minimap from './components/Minimap.jsx'
 import ColorBreakdown from './components/ColorBreakdown.jsx'
 import PomodoroTimer from './components/PomodoroTimer.jsx'
 import { usePomodoro } from './hooks/usePomodoro.js'
-import DistractionsModal from './components/DistractionsModal.jsx'
+import DistractionsView from './components/DistractionsView.jsx'
 import TemplatesModal from './components/TemplatesModal.jsx'
 import PlacedBlockEditModal from './components/PlacedBlockEditModal.jsx'
 import HelpModal from './components/HelpModal.jsx'
@@ -84,7 +84,6 @@ export default function App() {
   const [picking, setPicking] = useState(null) // { blockId, duration, movingPlacedId?, movingTrack? } — used in no-drag mode
   const [showSettings, setShowSettings] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
-  const [showDistractions, setShowDistractions] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [editingPlaced, setEditingPlaced] = useState(null) // { placed, track }
   const [distractions,  setDistractions]  = useState(() => load('tb-distractions', []))
@@ -326,12 +325,11 @@ export default function App() {
       if (editingPlaced)      { setEditingPlaced(null);          return }
       if (showHelp)           { setShowHelp(false);              return }
       if (showTemplates)      { setShowTemplates(false);         return }
-      if (showDistractions)   { setShowDistractions(false);      return }
       if (showSettings)       { setShowSettings(false);          return }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [editingPlaced, showHelp, showTemplates, showDistractions, showSettings])
+  }, [editingPlaced, showHelp, showTemplates, showSettings])
 
   useEffect(() => {
     if (!showUserMenu) return
@@ -775,7 +773,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-title-block">
           <h1 className="app-title">TIMEBLOCKS</h1>
-          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : activeView === 'focus' ? 'what are you doing right now?' : activeView === 'rules' ? 'rules you\'re holding yourself to' : 'drag · drop · build your day'}</p>
+          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : activeView === 'focus' ? 'what are you doing right now?' : activeView === 'rules' ? 'rules you\'re holding yourself to' : activeView === 'distractions' ? 'distractions rattling around in your head' : 'drag · drop · build your day'}</p>
         </div>
         <div className="app-header-actions">
           <div className="help-hint-wrap">
@@ -797,14 +795,6 @@ export default function App() {
               <line x1="6.5" y1="7"  x2="13.5" y2="7"  />
               <line x1="6.5" y1="10" x2="13.5" y2="10" />
               <line x1="6.5" y1="13" x2="10.5" y2="13" />
-            </svg>
-          </button>
-          <button className="distractions-nav-btn" onClick={() => setShowDistractions(true)} title="Brain Dump">
-            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ display: 'block' }}>
-              <path d="M10 2a7 7 0 1 0 4.95 11.95l2.83 2.83a1 1 0 0 0 1.41-1.41l-2.83-2.83A7 7 0 0 0 10 2zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 10 4z"/>
-              <circle cx="7.5" cy="9" r="1"/>
-              <circle cx="10" cy="9" r="1"/>
-              <circle cx="12.5" cy="9" r="1"/>
             </svg>
           </button>
           <button className="settings-btn" onClick={() => setShowSettings(true)} title="Settings">
@@ -899,37 +889,74 @@ export default function App() {
             </svg>
             Settings
           </button>
-          <button className="mobile-menu-item" onClick={() => { setShowDistractions(true); setShowMobileMenu(false) }}>
-            <svg className="mobile-menu-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M10 2a7 7 0 1 0 4.95 11.95l2.83 2.83a1 1 0 0 0 1.41-1.41l-2.83-2.83A7 7 0 0 0 10 2zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 10 4z"/>
-              <circle cx="7.5" cy="9" r="1"/>
-              <circle cx="10" cy="9" r="1"/>
-              <circle cx="12.5" cy="9" r="1"/>
-            </svg>
-            Brain Dump
-          </button>
         </div>
         </>
       )}
       </div>{/* end app-header-wrap */}
 
       <div className="main-tabs">
-        <button
-          className={`main-tab${activeView === 'focus' ? ' main-tab--active' : ''}`}
-          onClick={() => setActiveView('focus')}
-        >FOCUS</button>
-        <button
-          className={`main-tab${activeView === 'schedule' ? ' main-tab--active' : ''}`}
-          onClick={() => setActiveView('schedule')}
-        >SCHEDULE</button>
-        <button
-          className={`main-tab${activeView === 'tree' ? ' main-tab--active' : ''}`}
-          onClick={() => setActiveView('tree')}
-        >TREE</button>
-        <button
-          className={`main-tab${activeView === 'rules' ? ' main-tab--active' : ''}`}
-          onClick={() => setActiveView('rules')}
-        >RULES</button>
+        <div className="main-tabs-scroll">
+          <button
+            className={`main-tab${activeView === 'focus' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('focus')}
+          >FOCUS</button>
+          <button
+            className={`main-tab${activeView === 'schedule' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('schedule')}
+          >SCHEDULE</button>
+          <button
+            className={`main-tab${activeView === 'distractions' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('distractions')}
+          >BRAIN DUMP</button>
+          <button
+            className={`main-tab${activeView === 'tree' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('tree')}
+          >TREE</button>
+          <button
+            className={`main-tab${activeView === 'rules' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('rules')}
+          >RULES</button>
+        </div>
+        <div className="spotlight-toggle-wrap">
+          <button
+            type="button"
+            className={`spotlight-bulb-btn${settings.spotlightMode ? ' spotlight-bulb-btn--on' : ''}`}
+            aria-label="Toggle Spotlight Mode"
+            onClick={() => setSettings(prev => ({ ...prev, spotlightMode: !prev.spotlightMode }))}
+            title="Spotlight Mode — grays out every block except the ones marked to keep their color"
+          >
+            <svg className="spotlight-bulb" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <g className="spotlight-bulb-rays" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+                <line x1="11" y1="0"  x2="11"  y2="1.2" />
+                <line x1="17.5" y1="1.8" x2="16" y2="3.3" />
+                <line x1="4.5" y1="1.8" x2="6" y2="3.3" />
+                <line x1="21" y1="8" x2="19" y2="8" />
+                <line x1="1" y1="8" x2="3" y2="8" />
+              </g>
+              <path
+                className="spotlight-bulb-glass"
+                fill="currentColor"
+                d="M11 3a6 6 0 0 0-3.5 10.9c.5.35.75.9.75 1.5v.6a1 1 0 0 0 1 1h3.5a1 1 0 0 0 1-1v-.6c0-.6.25-1.15.75-1.5A6 6 0 0 0 11 3z"
+              />
+              <path
+                className="spotlight-bulb-base"
+                fill="currentColor"
+                d="M9 17.5h4a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM9.25 19.5h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1 0-1.5z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={!!settings.spotlightMode}
+            aria-label="Spotlight Mode"
+            className={`spotlight-switch${settings.spotlightMode ? ' spotlight-switch--on' : ''}`}
+            onClick={() => setSettings(prev => ({ ...prev, spotlightMode: !prev.spotlightMode }))}
+            title="Spotlight Mode — grays out every block except the ones marked to keep their color"
+          >
+            <span className="spotlight-switch-thumb" />
+          </button>
+        </div>
       </div>
 
       {activeView === 'schedule' && showMobileHint && settings.noDragMode && (
@@ -973,9 +1000,20 @@ export default function App() {
           pomo={pomo}
           message={focusMessage}
           onMessageChange={handleFocusMessageChange}
+          onAddDistraction={handleDistractionAdd}
         />
       ) : activeView === 'rules' ? (
         <RulesView rules={rules} onChange={handleRulesChange} />
+      ) : activeView === 'distractions' ? (
+        <DistractionsView
+          tasks={distractions}
+          onAdd={handleDistractionAdd}
+          onToggle={handleDistractionToggle}
+          onDelete={handleDistractionDelete}
+          onClearDone={handleDistractionClearDone}
+          onReorder={handleDistractionReorder}
+          onEdit={handleDistractionEdit}
+        />
       ) : (
       <div className="app-body">
         <div className={`left-sidebar${settings.showMinimap === false && settings.showPomodoro === false ? ' left-sidebar--hidden' : ''}`}>
@@ -986,6 +1024,7 @@ export default function App() {
               blocks={blocks}
               getBlock={getBlock}
               scrollRef={gridScrollRef}
+              settings={settings}
             />
           )}
           {settings.showPomodoro !== false && (
@@ -1039,8 +1078,6 @@ export default function App() {
           noDragMode={settings.noDragMode}
           picking={picking}
           onPick={handlePick}
-          onAddDistraction={handleDistractionAdd}
-          onOpenDistractions={() => setShowDistractions(true)}
           mvp={mvp}
           onMvpTextChange={handleMvpTextChange}
           onMvpToggle={handleMvpToggle}
@@ -1061,6 +1098,7 @@ export default function App() {
           onPick={handlePick}
           onEditBlock={handleEditBlock}
           onRemoveBlock={handleRemoveBlock}
+          settings={settings}
         />
       )}
 
@@ -1081,19 +1119,6 @@ export default function App() {
           onImport={handleImportData}
           onReset={handleResetData}
           onClose={() => setShowSettings(false)}
-        />
-      )}
-
-      {showDistractions && (
-        <DistractionsModal
-          tasks={distractions}
-          onAdd={handleDistractionAdd}
-          onToggle={handleDistractionToggle}
-          onDelete={handleDistractionDelete}
-          onClearDone={handleDistractionClearDone}
-          onReorder={handleDistractionReorder}
-          onEdit={handleDistractionEdit}
-          onClose={() => setShowDistractions(false)}
         />
       )}
 

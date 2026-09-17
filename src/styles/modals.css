@@ -214,6 +214,17 @@
   resize: vertical;
 }
 
+.pbe-keep-color {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+.pbe-keep-color input { accent-color: var(--accent); cursor: pointer; }
+
 .pbe-actions {
   display: flex;
   align-items: center;

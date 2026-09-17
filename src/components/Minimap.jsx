@@ -4,7 +4,7 @@ const SLOT_COUNT = 48
 const MINI_ROW_H = 5 // px per slot → 240px total
 const TOTAL_H = SLOT_COUNT * MINI_ROW_H
 
-export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef }) {
+export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef, settings = {} }) {
   const [indicator, setIndicator] = useState({ top: 0, height: 0 })
   const bodyRef = useRef(null)
   const dragging = useRef(false)
@@ -69,6 +69,7 @@ export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef }) 
           {ideal.map(p => {
             const block = getBlock(p.blockId)
             if (!block) return null
+            const muted = settings.spotlightMode && !block.keepColor
             return (
               <div
                 key={p.id}
@@ -76,7 +77,7 @@ export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef }) 
                 style={{
                   top:    p.startSlot * MINI_ROW_H,
                   height: Math.max(2, p.duration * MINI_ROW_H - 1),
-                  background: block.color,
+                  background: muted ? 'var(--muted-grey)' : block.color,
                 }}
               />
             )
@@ -88,6 +89,7 @@ export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef }) 
           {actual.map(p => {
             const block = getBlock(p.blockId)
             if (!block) return null
+            const muted = settings.spotlightMode && !block.keepColor
             return (
               <div
                 key={p.id}
@@ -95,7 +97,7 @@ export default function Minimap({ ideal, actual, blocks, getBlock, scrollRef }) 
                 style={{
                   top:    p.startSlot * MINI_ROW_H,
                   height: Math.max(2, p.duration * MINI_ROW_H - 1),
-                  background: block.color,
+                  background: muted ? 'var(--muted-grey)' : block.color,
                 }}
               />
             )

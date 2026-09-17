@@ -86,11 +86,21 @@
 
 .main-tabs {
   display: flex;
-  gap: 0.4rem;
+  align-items: center;
   margin-bottom: 0.75rem;
   border-bottom: 1px solid var(--grid-hour);
   flex-shrink: 0;
+  min-width: 0;
 }
+
+.main-tabs-scroll {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  min-width: 0;
+  scrollbar-width: none;
+}
+.main-tabs-scroll::-webkit-scrollbar { display: none; }
 
 .main-tab {
   background: none;
@@ -104,12 +114,92 @@
   letter-spacing: 0.12em;
   color: var(--text-muted);
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: color 0.12s, border-color 0.12s;
 }
 .main-tab:hover { color: var(--text-dim); }
 .main-tab--active {
   color: var(--accent);
   border-bottom-color: var(--accent);
+}
+
+/* ── Spotlight mode quick toggle ─────────────── */
+
+.spotlight-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  padding-left: 0.5rem;
+  padding-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+
+.spotlight-bulb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.spotlight-bulb {
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.spotlight-bulb-rays {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.spotlight-bulb-btn--on {
+  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.7));
+}
+.spotlight-bulb-btn--on .spotlight-bulb {
+  color: #facc15;
+}
+.spotlight-bulb-btn--on .spotlight-bulb-rays {
+  opacity: 1;
+}
+
+.spotlight-switch {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.spotlight-switch-thumb {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.spotlight-switch--on {
+  background: color-mix(in srgb, var(--accent) 30%, var(--bg-deep));
+  border-color: var(--accent);
+}
+.spotlight-switch--on .spotlight-switch-thumb {
+  transform: translateX(16px);
+  background: var(--accent);
 }
 
 .app--tree-view {

@@ -36,6 +36,7 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
   const [confirmTrack, setConfirmTrack] = useState(null)
   const [confirmReset, setConfirmReset] = useState(false)
   const importInputRef = useRef(null)
+  const mouseDownOnBackdrop = useRef(false)
 
   useEffect(() => {
     function onKey(e) { if (e.key === 'Escape') onClose() }
@@ -55,8 +56,12 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={e => { mouseDownOnBackdrop.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdrop.current) onClose() }}
+    >
+      <div className="settings-modal">
         <div className="settings-modal-header">
           <span className="settings-modal-title">
             <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" style={{ width: '0.9em', height: '0.9em', verticalAlign: 'text-bottom', marginRight: '0.4em' }}>
@@ -200,6 +205,17 @@ export default function SettingsModal({ settings, onChange, onClearDay, onExport
             <button className={`toggle-btn ${settings.pomodoroPageFill  ? 'toggle-btn--active' : ''}`} onClick={() => set('pomodoroPageFill', true)}>On</button>
           </div>
           <p className="settings-hint">Background fills up as the timer runs.</p>
+        </div>
+
+        <div className="settings-row" style={{ gridColumn: '1 / -1' }}>
+          <label className="settings-label">Spotlight mode</label>
+          <div className="toggle-group">
+            <button className={`toggle-btn ${!settings.spotlightMode ? 'toggle-btn--active' : ''}`} onClick={() => set('spotlightMode', false)}>Off</button>
+            <button className={`toggle-btn ${settings.spotlightMode  ? 'toggle-btn--active' : ''}`} onClick={() => set('spotlightMode', true)}>On</button>
+          </div>
+          <p className="settings-hint">
+            Grays out every block except the ones marked "keep color" (✎ Edit block → checkbox). Good for keeping one goal visible no matter how busy the schedule gets.
+          </p>
         </div>
 
         {/* Widget visibility */}

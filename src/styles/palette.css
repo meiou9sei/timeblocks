@@ -347,26 +347,7 @@
 .create-btn:hover  { filter: brightness(1.1); box-shadow: 0 0 20px var(--accent-glow); }
 .create-btn:active { filter: brightness(0.9); }
 
-/* ── Distraction input (inside tab) ─────────── */
-.palette-distractions {
-  padding-top: 0.4rem;
-}
-
-.palette-distr-form {
-  margin-bottom: 0.4rem;
-}
-
-.distraction-view-btn {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-size: 0.68rem;
-  cursor: pointer;
-  padding: 0;
-  opacity: 0.8;
-  transition: opacity 0.12s;
-}
-.distraction-view-btn:hover { opacity: 1; }
+/* ── Distraction quick-capture input (Focus tab) ─── */
 
 .distraction-input-row {
   display: flex;

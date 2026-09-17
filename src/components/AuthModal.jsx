@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -14,6 +14,7 @@ export default function AuthModal({ onClose }) {
   const [password, setPassword] = useState('')
   const [error,    setError]    = useState('')
   const [loading,  setLoading]  = useState(false)
+  const mouseDownOnBackdrop = useRef(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -63,7 +64,11 @@ export default function AuthModal({ onClose }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={e => { mouseDownOnBackdrop.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdrop.current) onClose() }}
+    >
       <div className="auth-modal">
         <div className="settings-modal-header">
           <div className="auth-modal-tabs">

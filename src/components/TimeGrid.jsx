@@ -36,12 +36,13 @@ function getCurrentTimeSlot() {
 
 function TrackColumn({
   track, placed, ghosts, blocks, dragInfo, hoverInfo, fmt, rowH,
-  selection, selectionTrack, onSelectionChange,
+  selection, selectionTrack, onSelectionChange, selectionAnchor,
   onDragOver, onDragLeave, onDrop,
   onDragStartPlaced, onDragEnd, onRemovePlaced, onResizeStart,
   onEditPlaced, justResized,
   getBlock,
   noDragMode, picking, onClickSlot, onClickPlaced,
+  spotlightMode,
 }) {
   const [tappedId, setTappedId] = useState(null)
   const highlight = new Set()
@@ -84,6 +85,7 @@ function TrackColumn({
       {ghosts.map(p => {
         const block = getBlock(p.blockId)
         if (!block) return null
+        const muted = spotlightMode && !block.keepColor
         return (
           <div
             key={`ghost-${p.id}`}
@@ -91,7 +93,7 @@ function TrackColumn({
             style={{
               top: p.startSlot * rowH,
               height: p.duration * rowH - 2,
-              background: block.color,
+              background: muted ? 'var(--muted-grey)' : block.color,
             }}
           >
             <span className="placed-block-name">{block.name}</span>
@@ -103,8 +105,9 @@ function TrackColumn({
       {placed.map(p => {
         const block = getBlock(p.blockId)
         if (!block) return null
+        const muted = spotlightMode && !block.keepColor
         const light = isLight(block.color)
-        const textColor = light ? '#111' : '#fff'
+        const textColor = muted ? '#fff' : (light ? '#111' : '#fff')
         const isSelected = selection.has(p.id) && selectionTrack === track
 
         // Dynamic line clamp based on available height
@@ -117,11 +120,26 @@ function TrackColumn({
           e.stopPropagation()
           setTappedId(id => id === p.id ? null : p.id)
           if (justResized.current) { justResized.current = false; return }
-          if (e.shiftKey) {
+          if (e.metaKey || e.ctrlKey) {
             const next = new Set(selectionTrack === track ? selection : [])
             if (next.has(p.id)) next.delete(p.id)
             else next.add(p.id)
             onSelectionChange(next, next.size > 0 ? track : null)
+            selectionAnchor.current = { id: p.id, track }
+          } else if (e.shiftKey) {
+            const anchor = selectionAnchor.current
+            const orderedIds = placed.slice().sort((a, b) => a.startSlot - b.startSlot).map(b => b.id)
+            const anchorIdx = anchor && anchor.track === track ? orderedIds.indexOf(anchor.id) : -1
+            const targetIdx = orderedIds.indexOf(p.id)
+            if (anchorIdx === -1) {
+              onSelectionChange(new Set([p.id]), track)
+            } else {
+              const [lo, hi] = anchorIdx < targetIdx ? [anchorIdx, targetIdx] : [targetIdx, anchorIdx]
+              const next = new Set(selectionTrack === track ? selection : [])
+              orderedIds.slice(lo, hi + 1).forEach(id => next.add(id))
+              onSelectionChange(next, track)
+            }
+            selectionAnchor.current = { id: p.id, track }
           } else if (window.matchMedia('(hover: hover)').matches) {
             onEditPlaced(p, track)
           }
@@ -134,9 +152,9 @@ function TrackColumn({
             style={{
               top: p.startSlot * rowH,
               height: p.duration * rowH - 2,
-              background: block.color,
+              background: muted ? 'var(--muted-grey)' : block.color,
               color: textColor,
-              '--glow': block.color,
+              '--glow': muted ? 'transparent' : block.color,
             }}
             draggable={!noDragMode}
             onClick={handleClick}
@@ -210,8 +228,14 @@ export default function TimeGrid({
   const wrapperRef = scrollRef ?? internalRef
   const idealRef = useRef(null)
   const actualRef = useRef(null)
+  const selectionAnchor = useRef(null) // { id, track } — last shift/cmd-click target, for range-select
   const fmt = settings.timeFormat ?? '12h'
   const ROW_H = settings.density === 'compact' ? ROW_H_COMPACT : ROW_H_NORMAL
+
+  const handleSelectionChange = useCallback((sel, trk) => {
+    if (sel.size === 0) selectionAnchor.current = null
+    onSelectionChange(sel, trk)
+  }, [onSelectionChange])
 
   useEffect(() => {
     if (wrapperRef.current) {
@@ -226,11 +250,11 @@ export default function TimeGrid({
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (e.key === 'Escape') onSelectionChange(new Set(), null)
+      if (e.key === 'Escape') handleSelectionChange(new Set(), null)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onSelectionChange])
+  }, [handleSelectionChange])
 
   useEffect(() => {
     if (!resizing) return
@@ -357,7 +381,7 @@ export default function TimeGrid({
             <div className="track-header track-header--actual">ACTUAL</div>
           </div>
           <div className="tracks-body">
-            <div className="track-wrapper" ref={idealRef} onClick={() => onSelectionChange(new Set(), null)}>
+            <div className="track-wrapper" ref={idealRef} onClick={() => handleSelectionChange(new Set(), null)}>
               <TrackColumn
                 track="ideal"
                 placed={ideal}
@@ -369,7 +393,8 @@ export default function TimeGrid({
                 rowH={ROW_H}
                 selection={selection}
                 selectionTrack={selectionTrack}
-                onSelectionChange={onSelectionChange}
+                onSelectionChange={handleSelectionChange}
+                selectionAnchor={selectionAnchor}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -384,12 +409,13 @@ export default function TimeGrid({
                 picking={picking}
                 onClickSlot={onClickSlot}
                 onClickPlaced={onClickPlaced}
+                spotlightMode={settings.spotlightMode}
               />
             </div>
 
             <div className="track-divider" />
 
-            <div className="track-wrapper" ref={actualRef} onClick={() => onSelectionChange(new Set(), null)}>
+            <div className="track-wrapper" ref={actualRef} onClick={() => handleSelectionChange(new Set(), null)}>
               <TrackColumn
                 track="actual"
                 placed={actual}
@@ -401,7 +427,8 @@ export default function TimeGrid({
                 rowH={ROW_H}
                 selection={selection}
                 selectionTrack={selectionTrack}
-                onSelectionChange={onSelectionChange}
+                onSelectionChange={handleSelectionChange}
+                selectionAnchor={selectionAnchor}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -416,6 +443,7 @@ export default function TimeGrid({
                 picking={picking}
                 onClickSlot={onClickSlot}
                 onClickPlaced={onClickPlaced}
+                spotlightMode={settings.spotlightMode}
               />
             </div>
             {timeLine}

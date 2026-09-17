@@ -40,7 +40,7 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking, onPick, onEditBlock, onRemoveBlock }) {
+export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking, onPick, onEditBlock, onRemoveBlock, settings = {} }) {
   const [showPanel, setShowPanel] = useState(false)
   const [editingBlock, setEditingBlock] = useState(null)
   const [name, setName] = useState('')
@@ -148,14 +148,15 @@ export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking
             <span className="mobile-block-empty">No blocks yet</span>
           )}
           {visibleBlocks.map(block => {
-            const light = isLight(block.color)
             const isPicking = picking?.blockId === block.id
+            const muted = settings.spotlightMode && !block.keepColor
+            const light = !muted && isLight(block.color)
             return (
               <button
                 key={block.id}
                 type="button"
                 className={`mobile-block-tile${isPicking ? ' mobile-block-tile--picking' : ''}`}
-                style={{ background: block.color, color: light ? '#111' : '#fff', '--glow': block.color }}
+                style={{ background: muted ? 'var(--muted-grey)' : block.color, color: light ? '#111' : '#fff', '--glow': muted ? 'transparent' : block.color }}
                 onClick={() => handleTileClick(block)}
               >
                 <span className="mobile-block-tile-name">{block.name}</span>

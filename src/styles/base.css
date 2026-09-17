@@ -14,6 +14,7 @@
   --palette-w:  230px;
   --radius:     3px;
   --font:       'Courier New', Courier, monospace;
+  --muted-grey: #6b7280;
 }
 
 [data-density="compact"] { --row-h: 20px; }

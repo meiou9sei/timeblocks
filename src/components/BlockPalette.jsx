@@ -53,16 +53,14 @@ function isLight(hex) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 115
 }
 
-export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, noDragMode, picking, onPick, onAddDistraction, onOpenDistractions, mvp, onMvpTextChange, onMvpToggle, onMvpRewardChange, starredGoals = [], onAdhocDragStart, onAdhocPick }) {
+export default function BlockPalette({ blocks, settings = {}, onDragStart, onDragEnd, onAddBlock, onEditBlock, onRemoveBlock, onReorderBlocks, noDragMode, picking, onPick, mvp, onMvpTextChange, onMvpToggle, onMvpRewardChange, starredGoals = [], onAdhocDragStart, onAdhocPick }) {
   const [name,        setName]        = useState('')
   const [color,       setColor]       = useState(TETRIS_COLORS[0])
   const [duration,    setDuration]    = useState(2)
   const [customColor, setCustomColor] = useState('#00e5ff')
   const [editingBlock, setEditingBlock] = useState(null)
   const [dragOverId,  setDragOverId]  = useState(null)
-  const [distraction, setDistraction] = useState('')
-  const [distrAdded,  setDistrAdded]  = useState(false)
-  const [paletteTab,  setPaletteTab]  = useState('distractions') // 'mvp' | 'distractions' | 'goals'
+  const [paletteTab,  setPaletteTab]  = useState('mvp') // 'mvp' | 'goals'
   const reorderingId = useRef(null)
   const quote = useRef(QUOTES[Math.floor(Math.random() * QUOTES.length)]).current
 
@@ -77,15 +75,6 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
     setName('')
   }
 
-  function handleAddDistraction(e) {
-    e.preventDefault()
-    if (!distraction.trim()) return
-    onAddDistraction(distraction.trim())
-    setDistraction('')
-    setDistrAdded(true)
-    setTimeout(() => setDistrAdded(false), 2000)
-  }
-
   return (
     <div className="block-palette">
       <div className="palette-section-title">BLOCKS</div>
@@ -95,7 +84,8 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
           <p className="palette-empty">No blocks yet. Create one below.</p>
         )}
         {blocks.filter(b => !b.deleted && !b.paletteHidden).map(block => {
-          const light = isLight(block.color)
+          const muted = settings.spotlightMode && !block.keepColor
+          const light = !muted && isLight(block.color)
           return (
             <div
               key={block.id}
@@ -105,9 +95,9 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                 noDragMode && picking?.blockId === block.id ? 'palette-block--picking' : '',
               ].join(' ')}
               style={{
-                background: block.color,
+                background: muted ? 'var(--muted-grey)' : block.color,
                 color: light ? '#111' : '#fff',
-                '--glow': block.color,
+                '--glow': muted ? 'transparent' : block.color,
               }}
               draggable={!noDragMode}
               onClick={() => {
@@ -196,10 +186,6 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
               onClick={() => setPaletteTab('mvp')}
             >TODAY'S MVP</button>
             <button
-              className={`palette-tab${paletteTab === 'distractions' ? ' palette-tab--active' : ''}`}
-              onClick={() => setPaletteTab('distractions')}
-            >DISTRACTIONS</button>
-            <button
               className={`palette-tab${paletteTab === 'goals' ? ' palette-tab--active' : ''}`}
               onClick={() => setPaletteTab('goals')}
             >GOALS</button>
@@ -281,28 +267,6 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                   </div>
                 ))
               )}
-            </div>
-          )}
-
-          {paletteTab === 'distractions' && (
-            <div className="palette-distractions">
-              <form className="palette-distr-form" onSubmit={handleAddDistraction}>
-                <div className="distraction-input-row">
-                  <input
-                    className="create-input distraction-input"
-                    placeholder="What's on your mind..."
-                    value={distraction}
-                    onChange={(e) => setDistraction(e.target.value)}
-                    maxLength={2000}
-                  />
-                  <button type="submit" className="distraction-add-btn" disabled={!distraction.trim()}>
-                    {distrAdded ? '✓' : '+'}
-                  </button>
-                </div>
-              </form>
-              <button type="button" className="distraction-view-btn" onClick={onOpenDistractions}>
-                view all in Brain Dump →
-              </button>
             </div>
           )}
         </div>

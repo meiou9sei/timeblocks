@@ -1,6 +1,13 @@
+import { useRef } from 'react'
+
 export default function HelpModal({ onClose }) {
+  const mouseDownOnBackdrop = useRef(false)
   return (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={e => { mouseDownOnBackdrop.current = e.target === e.currentTarget }}
+      onClick={e => { if (e.target === e.currentTarget && mouseDownOnBackdrop.current) onClose() }}
+    >
       <div className="help-modal">
         <div className="settings-modal-header">
           <span className="settings-modal-title">HOW IT WORKS</span>
@@ -137,8 +144,12 @@ export default function HelpModal({ onClose }) {
                   <td>Redo (alternate)</td>
                 </tr>
                 <tr>
+                  <td><kbd>Cmd / Ctrl</kbd> + Click block</td>
+                  <td>Toggle a block in/out of the selection</td>
+                </tr>
+                <tr>
                   <td><kbd>Shift</kbd> + Click block</td>
-                  <td>Multi-select placed blocks</td>
+                  <td>Select every block between the last-clicked block and this one</td>
                 </tr>
                 <tr>
                   <td><kbd>Alt / Option</kbd> + Drag block</td>

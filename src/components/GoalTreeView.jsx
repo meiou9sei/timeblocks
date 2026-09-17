@@ -33,6 +33,8 @@ function formatCompletedDate(dateStr) {
 }
 
 function DeleteChoiceModal({ onKeepChildren, onDeleteAll, onCancel }) {
+  const mouseDownOnBackdrop = useRef(false)
+
   useEffect(() => {
     function onKeyDown(e) {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
@@ -45,7 +47,11 @@ function DeleteChoiceModal({ onKeepChildren, onDeleteAll, onCancel }) {
   }, [onCancel, onKeepChildren, onDeleteAll])
 
   return (
-    <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+    <div
+      className="modal-backdrop"
+      onMouseDown={(e) => { mouseDownOnBackdrop.current = e.target === e.currentTarget }}
+      onClick={(e) => { if (e.target === e.currentTarget && mouseDownOnBackdrop.current) onCancel() }}
+    >
       <div className="tree-delete-modal">
         <p className="tree-delete-modal-text">This subgoal has its own subgoals underneath it. What would you like to do?</p>
         <div className="tree-delete-modal-actions">

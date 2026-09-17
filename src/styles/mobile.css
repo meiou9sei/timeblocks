@@ -67,6 +67,10 @@
     display: none;
   }
 
+  .spotlight-toggle-wrap {
+    padding-bottom: 0.4rem;
+  }
+
   /* Settings modal */
   .modal-backdrop {
     align-items: flex-end;

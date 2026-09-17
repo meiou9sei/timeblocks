@@ -64,7 +64,38 @@ function FocusMessage({ message, onChange }) {
   )
 }
 
-export default function FocusView({ ideal, actual, getBlock, settings, pomo, message, onMessageChange }) {
+function FocusDistraction({ onAdd }) {
+  const [text, setText] = useState('')
+  const [added, setAdded] = useState(false)
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (!text.trim()) return
+    onAdd(text.trim())
+    setText('')
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1500)
+  }
+
+  return (
+    <form className="focus-distraction-row" onSubmit={handleSubmit}>
+      <div className="distraction-input-row">
+        <input
+          className="create-input distraction-input"
+          placeholder="Distractions here. Stay locked in 👑"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={2000}
+        />
+        <button type="submit" className="distraction-add-btn" disabled={!text.trim()}>
+          {added ? '✓' : '+'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+export default function FocusView({ ideal, actual, getBlock, settings, pomo, message, onMessageChange, onAddDistraction }) {
   const [nowSlot, setNowSlot] = useState(currentSlot)
 
   useEffect(() => {
@@ -97,15 +128,17 @@ export default function FocusView({ ideal, actual, getBlock, settings, pomo, mes
             onDismiss={pomo.dismiss}
           />
         </div>
+        <FocusDistraction onAdd={onAddDistraction} />
         <FocusMessage message={message} onChange={onMessageChange} />
       </div>
     )
   }
 
-  const light = isLight(block.color)
+  const muted = settings.spotlightMode && !block.keepColor
+  const light = !muted && isLight(block.color)
 
   return (
-    <div className="focus-view" style={{ background: block.color, color: light ? '#111' : '#fff' }}>
+    <div className="focus-view" style={{ background: muted ? 'var(--muted-grey)' : block.color, color: light ? '#111' : '#fff' }}>
       <div className="focus-content">
         <div className="focus-time">
           {formatTime(current.startSlot, fmt)} – {formatTime(current.startSlot + current.duration, fmt)}
@@ -124,6 +157,7 @@ export default function FocusView({ ideal, actual, getBlock, settings, pomo, mes
           onDismiss={pomo.dismiss}
         />
       </div>
+      <FocusDistraction onAdd={onAddDistraction} />
       <FocusMessage message={message} onChange={onMessageChange} />
     </div>
   )
