@@ -18,7 +18,9 @@ import MobileBlockBar from './components/MobileBlockBar.jsx'
 import GoalTreeView from './components/GoalTreeView.jsx'
 import FocusView from './components/FocusView.jsx'
 import RulesView from './components/RulesView.jsx'
+import GearsView from './components/GearsView.jsx'
 import { makeTree, updateNodeText, setNodeDone, toggleNodeStar, insertNodeAbove, addChildNode, removeNode, removeNodeKeepChildren, collectStarred, treeToStorage, treeFromStorage } from './utils/tree.js'
+import { todayStr } from './utils/date.js'
 import './styles/base.css'
 import './styles/layout.css'
 import './styles/grid.css'
@@ -33,6 +35,7 @@ import './styles/tree.css'
 import './styles/focus.css'
 import './styles/rules.css'
 import './styles/mobile.css'
+import './styles/gears.css'
 
 
 const uid = () => Math.random().toString(36).slice(2)
@@ -58,10 +61,6 @@ function load(key, fallback) {
   } catch {
     return fallback
   }
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
 }
 
 function defaultMvp() {
@@ -96,6 +95,8 @@ export default function App() {
   const [treeBoardTitle, setTreeBoardTitle] = useState(() => load('tb-tree-title', ''))
   const [focusMessage, setFocusMessage] = useState(() => load('tb-focus-message', ''))
   const [rules, setRules] = useState(() => load('tb-rules', ''))
+  const [gearFields, setGearFields] = useState(() => load('tb-gear-fields', []))
+  const [gearLog, setGearLog] = useState(() => load('tb-gear-log', {}))
   const [activeView, setActiveView] = useState(() => load('tb-active-view', 'schedule'))
   const [selection, setSelection] = useState(new Set())
   const [selectionTrack, setSelectionTrack] = useState(null)
@@ -240,6 +241,8 @@ export default function App() {
               if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
               if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
               if (d.rules !== undefined) setRules(d.rules)
+              if (d.gearFields)    setGearFields(d.gearFields)
+              if (d.gearLog)       setGearLog(d.gearLog)
               if (d.distractions)  setDistractions(d.distractions)
               if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
             }
@@ -259,6 +262,8 @@ export default function App() {
             if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
             if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
             if (d.rules !== undefined) setRules(d.rules)
+            if (d.gearFields)    setGearFields(d.gearFields)
+            if (d.gearLog)       setGearLog(d.gearLog)
             if (d.distractions)  setDistractions(d.distractions)
             if (d.mvp && d.mvp.date === todayStr()) setMvp(d.mvp)
           }
@@ -282,9 +287,9 @@ export default function App() {
     clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
       const { noDragMode: _local, ...syncedSettings } = settings
-      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, trees: trees.map(treeToStorage), treeBoardTitle, focusMessage, rules, distractions, mvp })
+      setDoc(doc(db, 'users', user.uid), { blocks, ideal, actual, settings: syncedSettings, templates, trees: trees.map(treeToStorage), treeBoardTitle, focusMessage, rules, gearFields, gearLog, distractions, mvp })
     }, 800)
-  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, distractions, mvp, user])
+  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, gearFields, gearLog, distractions, mvp, user])
 
   // Hard-delete soft-deleted blocks that no longer have any placements
   useEffect(() => {
@@ -315,6 +320,8 @@ export default function App() {
   useEffect(() => { localStorage.setItem('tb-tree-title',      JSON.stringify(treeBoardTitle)) }, [treeBoardTitle])
   useEffect(() => { localStorage.setItem('tb-focus-message',  JSON.stringify(focusMessage))    }, [focusMessage])
   useEffect(() => { localStorage.setItem('tb-rules',          JSON.stringify(rules))            }, [rules])
+  useEffect(() => { localStorage.setItem('tb-gear-fields',     JSON.stringify(gearFields))       }, [gearFields])
+  useEffect(() => { localStorage.setItem('tb-gear-log',        JSON.stringify(gearLog))          }, [gearLog])
   useEffect(() => { localStorage.setItem('tb-active-view',    JSON.stringify(activeView))     }, [activeView])
   useEffect(() => { document.documentElement.setAttribute('data-theme', settings.theme ?? 'dark') }, [settings.theme])
   useEffect(() => { document.documentElement.setAttribute('data-density', settings.density ?? 'normal') }, [settings.density])
@@ -666,6 +673,8 @@ export default function App() {
   const handleTreeBoardTitleChange = useCallback((text) => setTreeBoardTitle(text), [])
   const handleFocusMessageChange = useCallback((text) => setFocusMessage(text), [])
   const handleRulesChange = useCallback((text) => setRules(text), [])
+  const handleGearFieldsChange = useCallback((fields) => setGearFields(fields), [])
+  const handleGearLogChange = useCallback((log) => setGearLog(log), [])
 
   const starredGoals = useMemo(() => {
     return trees
@@ -700,6 +709,8 @@ export default function App() {
       treeBoardTitle,
       focusMessage,
       rules,
+      gearFields,
+      gearLog,
       distractions,
       mvp,
     }, null, 2)
@@ -707,10 +718,10 @@ export default function App() {
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
     a.href     = url
-    a.download = `timeblocks-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `timeblocks-backup-${todayStr()}.json`
     a.click()
     URL.revokeObjectURL(url)
-  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, distractions, mvp])
+  }, [blocks, ideal, actual, settings, templates, trees, treeBoardTitle, focusMessage, rules, gearFields, gearLog, distractions, mvp])
 
   const handleImportData = useCallback((file) => {
     const reader = new FileReader()
@@ -726,6 +737,8 @@ export default function App() {
         if (d.treeBoardTitle !== undefined) setTreeBoardTitle(d.treeBoardTitle)
         if (d.focusMessage !== undefined) setFocusMessage(d.focusMessage)
         if (d.rules !== undefined) setRules(d.rules)
+        if (d.gearFields)   setGearFields(d.gearFields)
+        if (d.gearLog)      setGearLog(d.gearLog)
         if (d.distractions) setDistractions(d.distractions)
         if (d.mvp)          setMvp(d.mvp)
       } catch { /* ignore bad files */ }
@@ -773,7 +786,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-title-block">
           <h1 className="app-title">TIMEBLOCKS</h1>
-          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : activeView === 'focus' ? 'what are you doing right now?' : activeView === 'rules' ? 'rules you\'re holding yourself to' : activeView === 'distractions' ? 'distractions rattling around in your head' : 'drag · drop · build your day'}</p>
+          <p className="app-subtitle">{activeView === 'tree' ? 'plant a goal · grow the steps' : activeView === 'focus' ? 'what are you doing right now?' : activeView === 'rules' ? 'rules you\'re holding yourself to' : activeView === 'gears' ? 'no zero days' : activeView === 'distractions' ? 'distractions rattling around in your head' : 'drag · drop · build your day'}</p>
         </div>
         <div className="app-header-actions">
           <div className="help-hint-wrap">
@@ -913,6 +926,10 @@ export default function App() {
             onClick={() => setActiveView('tree')}
           >TREE</button>
           <button
+            className={`main-tab${activeView === 'gears' ? ' main-tab--active' : ''}`}
+            onClick={() => setActiveView('gears')}
+          >GEARS</button>
+          <button
             className={`main-tab${activeView === 'rules' ? ' main-tab--active' : ''}`}
             onClick={() => setActiveView('rules')}
           >RULES</button>
@@ -1004,6 +1021,13 @@ export default function App() {
         />
       ) : activeView === 'rules' ? (
         <RulesView rules={rules} onChange={handleRulesChange} />
+      ) : activeView === 'gears' ? (
+        <GearsView
+          fields={gearFields}
+          gearLog={gearLog}
+          onFieldsChange={handleGearFieldsChange}
+          onLogChange={handleGearLogChange}
+        />
       ) : activeView === 'distractions' ? (
         <DistractionsView
           tasks={distractions}

@@ -1,0 +1,381 @@
+/* ── Gears tab ────────────────────────────────── */
+
+.gears-view {
+  --lvl0: #ef4444;
+  --lvl1: #4ade80;
+  --lvl2: #22d3ee;
+  --lvl3: #3b82f6;
+  --lvl4: #a855f7;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.gears-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.gears-view-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.gears-configure-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.1rem;
+}
+.gears-configure-link:hover { color: var(--accent); }
+
+.gears-empty {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.gears-date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.gears-date-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0.1rem 0.5rem;
+  cursor: pointer;
+}
+.gears-date-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.gears-date-btn:disabled { opacity: 0.3; cursor: default; }
+
+.gears-date-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  min-width: 130px;
+  text-align: center;
+}
+
+.gears-view-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Gears: heatmap ───────────────────────────── */
+
+.gears-heatmap {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.gears-heatmap-header {
+  flex-shrink: 0;
+}
+
+.gears-heatmap-scroll {
+  overflow-x: auto;
+}
+
+.gears-heatmap-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: fit-content;
+}
+
+.gears-heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gears-heatmap-row--overall {
+  margin-top: 3px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.gears-heatmap-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 62px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gears-heatmap-row--overall .gears-heatmap-label {
+  color: var(--text-dim);
+}
+
+.gears-heatmap-cells {
+  display: flex;
+  gap: 2px;
+}
+
+.gears-heatmap-cell {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+}
+
+.gears-heatmap-cell--untracked {
+  background: transparent;
+  border: 1px dotted var(--border);
+  opacity: 0.35;
+}
+
+.gears-heatmap-cell--lvl0 { background: var(--lvl0); border-color: transparent; }
+.gears-heatmap-cell--lvl1 { background: var(--lvl1); border-color: transparent; }
+.gears-heatmap-cell--lvl2 { background: var(--lvl2); border-color: transparent; }
+.gears-heatmap-cell--lvl3 { background: var(--lvl3); border-color: transparent; }
+.gears-heatmap-cell--lvl4 { background: var(--lvl4); border-color: transparent; }
+
+.gears-field {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-deep);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.gears-field--lvl0 { border-left-color: var(--lvl0); background: color-mix(in srgb, var(--lvl0) 10%, var(--bg-deep)); }
+.gears-field--lvl1 { border-left-color: var(--lvl1); background: color-mix(in srgb, var(--lvl1) 10%, var(--bg-deep)); }
+.gears-field--lvl2 { border-left-color: var(--lvl2); background: color-mix(in srgb, var(--lvl2) 10%, var(--bg-deep)); }
+.gears-field--lvl3 { border-left-color: var(--lvl3); background: color-mix(in srgb, var(--lvl3) 10%, var(--bg-deep)); }
+.gears-field--lvl4 { border-left-color: var(--lvl4); background: color-mix(in srgb, var(--lvl4) 10%, var(--bg-deep)); }
+
+.gears-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font);
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.gears-field-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gears-pips {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.gears-pip {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+}
+.gears-pip--filled { background: var(--accent); border-color: var(--accent); }
+
+.gears-field-active-text {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.gears-carousel {
+  --card-w: 8.2rem;
+  --card-gap: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.75rem 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .gears-carousel { --card-w: 6.2rem; }
+}
+
+.gears-carousel-viewport {
+  width: calc(3 * var(--card-w) + 2 * var(--card-gap));
+  overflow: hidden;
+}
+
+.gears-carousel-track {
+  display: flex;
+  gap: var(--card-gap);
+  transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gears-carousel-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 0 0 var(--card-w);
+  width: var(--card-w);
+  box-sizing: border-box;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  font-family: var(--font);
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.gears-carousel-card--empty {
+  border: 1px dotted var(--border);
+  opacity: 0.15;
+}
+
+.gears-carousel-card--active {
+  background: var(--accent-glow);
+  border: 1px solid var(--accent);
+}
+
+.gears-carousel-card--faded {
+  background: none;
+  border: 1px dashed var(--border);
+  opacity: 0.45;
+  cursor: pointer;
+  transform: scale(0.97);
+}
+.gears-carousel-card--faded:hover { opacity: 0.8; }
+
+.gears-carousel-gear-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.gears-carousel-gear-text {
+  font-size: 0.72rem;
+  color: var(--text);
+}
+
+.gears-carousel-clear {
+  align-self: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 0.62rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.1rem;
+}
+.gears-carousel-clear:hover { color: var(--danger); }
+
+/* ── Gears: configure view ───────────────────── */
+
+.gears-configure {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.gears-config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem;
+  background: var(--bg-deep);
+  flex-shrink: 0;
+}
+
+.gears-config-field-header {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.gears-config-field-header .create-input { flex: 1; }
+
+.gears-field-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+}
+.gears-field-remove:hover { color: var(--danger); }
+
+.gears-config-gear-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gears-config-gear-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 22px;
+  flex-shrink: 0;
+}
+.gears-config-gear-row .create-input { flex: 1; }
+
+.gears-config-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}

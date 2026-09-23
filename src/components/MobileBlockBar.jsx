@@ -42,7 +42,7 @@ function isLight(hex) {
 
 export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking, onPick, onEditBlock, onRemoveBlock, settings = {} }) {
   const [showPanel, setShowPanel] = useState(false)
-  const [editingBlock, setEditingBlock] = useState(null)
+  const [editingBlockId, setEditingBlockId] = useState(null)
   const [name, setName] = useState('')
   const [color, setColor] = useState(TETRIS_COLORS[0])
   const [duration, setDuration] = useState(2)
@@ -68,7 +68,7 @@ export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking
     if (last && last.blockId === block.id) {
       lastTapRef.current = null
       onPick(null)
-      setEditingBlock(block)
+      setEditingBlockId(block.id)
       return
     }
     lastTapRef.current = { blockId: block.id }
@@ -78,15 +78,19 @@ export default function MobileBlockBar({ blocks, onAddBlock, noDragMode, picking
 
   return (
     <>
-      {editingBlock && (
-        <PlacedBlockEditModal
-          block={editingBlock}
-          placedId={null}
-          onSave={(blockId, updates) => { onEditBlock(blockId, updates); setEditingBlock(null) }}
-          onRemove={() => { onRemoveBlock(editingBlock.id); setEditingBlock(null) }}
-          onClose={() => setEditingBlock(null)}
-        />
-      )}
+      {editingBlockId && (() => {
+        const editingBlock = blocks.find(b => b.id === editingBlockId)
+        if (!editingBlock) return null
+        return (
+          <PlacedBlockEditModal
+            block={editingBlock}
+            placedId={null}
+            onSave={(blockId, updates) => { onEditBlock(blockId, updates); setEditingBlockId(null) }}
+            onRemove={() => { onRemoveBlock(editingBlock.id); setEditingBlockId(null) }}
+            onClose={() => setEditingBlockId(null)}
+          />
+        )
+      })()}
 
       {showPanel && (
         <div className="mobile-new-block-panel">

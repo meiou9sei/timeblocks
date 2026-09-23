@@ -58,7 +58,7 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
   const [color,       setColor]       = useState(TETRIS_COLORS[0])
   const [duration,    setDuration]    = useState(2)
   const [customColor, setCustomColor] = useState('#00e5ff')
-  const [editingBlock, setEditingBlock] = useState(null)
+  const [editingBlockId, setEditingBlockId] = useState(null)
   const [dragOverId,  setDragOverId]  = useState(null)
   const [paletteTab,  setPaletteTab]  = useState('mvp') // 'mvp' | 'goals'
   const reorderingId = useRef(null)
@@ -105,7 +105,7 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                   onPick(picking?.blockId === block.id ? null : { blockId: block.id, duration: block.duration })
                   return
                 }
-                setEditingBlock(block)
+                setEditingBlockId(block.id)
               }}
               onDragStart={(e) => {
                 e.stopPropagation()
@@ -158,7 +158,7 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
                 <button
                   className="palette-block-edit"
                   style={{ color: light ? '#111' : '#fff' }}
-                  onClick={(e) => { e.stopPropagation(); setEditingBlock(block) }}
+                  onClick={(e) => { e.stopPropagation(); setEditingBlockId(block.id) }}
                   title="Edit block"
                 >✎</button>
               </div>
@@ -167,16 +167,20 @@ export default function BlockPalette({ blocks, settings = {}, onDragStart, onDra
         })}
       </div>
 
-      {editingBlock && (
-        <PlacedBlockEditModal
-          block={editingBlock}
-          placedId={null}
-          track={null}
-          onSave={(blockId, updates) => onEditBlock(blockId, updates)}
-          onRemove={() => onRemoveBlock(editingBlock.id)}
-          onClose={() => setEditingBlock(null)}
-        />
-      )}
+      {editingBlockId && (() => {
+        const editingBlock = blocks.find(b => b.id === editingBlockId)
+        if (!editingBlock) return null
+        return (
+          <PlacedBlockEditModal
+            block={editingBlock}
+            placedId={null}
+            track={null}
+            onSave={(blockId, updates) => onEditBlock(blockId, updates)}
+            onRemove={() => onRemoveBlock(editingBlock.id)}
+            onClose={() => setEditingBlockId(null)}
+          />
+        )
+      })()}
 
       {settings.showSomedayMaybe !== false && (
         <div className="palette-procrast">
