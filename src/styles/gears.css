@@ -2,10 +2,10 @@
 
 .gears-view {
   --lvl0: #ef4444;
-  --lvl1: #4ade80;
-  --lvl2: #22d3ee;
-  --lvl3: #3b82f6;
-  --lvl4: #a855f7;
+  --lvl1: #f97316;
+  --lvl2: #f9e040;
+  --lvl3: #4ade80;
+  --lvl4: #14b8a6;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -205,7 +205,12 @@
 .gears-field-name {
   font-size: 0.8rem;
   font-weight: 700;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gears-pips {
@@ -302,18 +307,6 @@
   color: var(--text);
 }
 
-.gears-carousel-clear {
-  align-self: center;
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-family: var(--font);
-  font-size: 0.62rem;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 0.1rem;
-}
-.gears-carousel-clear:hover { color: var(--danger); }
 
 /* ── Gears: configure view ───────────────────── */
 

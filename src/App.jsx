@@ -458,7 +458,7 @@ export default function App() {
     const startSlot = Math.max(0, slot - (dragInfo.offsetSlot ?? 0))
     if (startSlot + duration > 48) return
 
-    const excludeId = dragInfo.fromTrack === track ? (dragInfo.placedId ?? null) : null
+    const excludeId = (!dragInfo.isDuplicate && dragInfo.fromTrack === track) ? (dragInfo.placedId ?? null) : null
     if (isOccupied(startSlot, duration, track, excludeId)) return
 
     const setTarget = track === 'ideal' ? setIdeal : setActual

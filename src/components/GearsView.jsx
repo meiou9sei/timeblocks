@@ -19,6 +19,7 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
   const [configuring, setConfiguring] = useState(fields.length === 0)
   const [draftFields, setDraftFields] = useState(fields.length ? cloneFields(fields) : [emptyField()])
   const [expandedId, setExpandedId] = useState(null)
+  const [justAddedId, setJustAddedId] = useState(null)
 
   const dayLog = gearLog[date] ?? {}
 
@@ -32,6 +33,7 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
 
   function openConfigure() {
     setDraftFields(fields.length ? cloneFields(fields) : [emptyField()])
+    setJustAddedId(null)
     setConfiguring(true)
   }
 
@@ -42,7 +44,9 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
   }
 
   function addField() {
-    setDraftFields(prev => [...prev, emptyField()])
+    const f = emptyField()
+    setDraftFields(prev => [...prev, f])
+    setJustAddedId(f.id)
   }
   function removeField(id) {
     setDraftFields(prev => prev.filter(f => f.id !== id))
@@ -73,7 +77,8 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
                   placeholder="Field name (e.g. Read)"
                   value={f.name}
                   onChange={e => renameField(f.id, e.target.value)}
-                  maxLength={24}
+                  maxLength={200}
+                  autoFocus={f.id === justAddedId}
                 />
                 <button type="button" className="gears-field-remove" onClick={() => removeField(f.id)} title="Remove field">×</button>
               </div>
@@ -168,15 +173,19 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
                           return <div key={slotLevel} className="gears-carousel-card gears-carousel-card--empty" aria-hidden="true" />
                         }
                         const isActive = slotLevel === level
-                        const label = slotLevel === 0 ? 'Not started' : `Gear ${slotLevel}`
-                        const text = slotLevel === 0
-                          ? (isActive ? 'Tap a gear to log today' : '—')
-                          : (field.gears[slotLevel - 1] || '—')
+                        const content = slotLevel === 0
+                          ? (<>
+                              <span className="gears-carousel-gear-label">Zero day</span>
+                              <span className="gears-carousel-gear-text">Do the MVP!</span>
+                            </>)
+                          : (<>
+                              <span className="gears-carousel-gear-label">Gear {slotLevel}</span>
+                              <span className="gears-carousel-gear-text">{field.gears[slotLevel - 1] || '—'}</span>
+                            </>)
                         if (isActive) {
                           return (
                             <div key={slotLevel} className="gears-carousel-card gears-carousel-card--active">
-                              <span className="gears-carousel-gear-label">{label}</span>
-                              <span className="gears-carousel-gear-text">{text}</span>
+                              {content}
                             </div>
                           )
                         }
@@ -187,19 +196,12 @@ export default function GearsView({ fields, gearLog, onFieldsChange, onLogChange
                             className="gears-carousel-card gears-carousel-card--faded"
                             onClick={() => setLevel(field.id, slotLevel)}
                           >
-                            <span className="gears-carousel-gear-label">{label}</span>
-                            <span className="gears-carousel-gear-text">{text}</span>
+                            {content}
                           </button>
                         )
                       })}
                     </div>
                   </div>
-
-                  {level > 0 && (
-                    <button type="button" className="gears-carousel-clear" onClick={() => setLevel(field.id, level)}>
-                      Clear today
-                    </button>
-                  )}
                 </div>
               )}
             </div>

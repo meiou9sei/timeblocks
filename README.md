@@ -57,8 +57,8 @@ A "no zero days" habit tracker, based on the idea of gears: define a few daily f
 - Each field shows a pip gauge for today plus a tap-to-expand carousel — the current gear sits centered with its neighbors visible on either side, and switching gears slides the strip over with a quick gear-shift-style animation
 - The day rolls over at 4am, not midnight, so staying up late still logs against the day that's ending
 - Date nav to page back through past days and log or fix earlier entries
-- Each field's box tints red/green/blue/purple to match its gear level for today, at a glance
-- A heatmap at the bottom shows the last 35 days per field (red = missed, green → cyan → blue → purple = Gear 1 → 4), plus an "Overall" row showing the *minimum* gear reached across all fields that day — useful if your rule is "no Gear 2s until every field has hit Gear 1"
+- Each field's box tints to match its gear level for today, at a glance
+- A heatmap at the bottom shows the last 35 days per field (red → orange → yellow → green → teal for gear 0 through 4), plus an "Overall" row showing the *minimum* gear reached across all fields that day — useful if your rule is "no Gear 2s until every field has hit Gear 1"
 - Each field has a "Since" start date (defaults to when you created it) so days before it existed aren't marked as missed in the heatmap
 - Synced via the same Firestore backend as the rest of the app
 
